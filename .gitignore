@@ -1,0 +1,22 @@
+.venv/
+__pycache__/
+
+# Built papers and anything the server stores are data, never part of the repo.
+out/
+data/
+server.log
+
+# Real editions stay local. Only the sample is tracked.
+edition/*
+!edition/sample.json
+
+# Local settings and secrets for docker compose.
+.env
+
+# A reader's own sources.toml, source modules and portrait. Only the note is tracked.
+config/*
+!config/README.md
+
+# Section files left for the inbox source are personal. Only the note is tracked.
+inbox/*
+!inbox/README.md

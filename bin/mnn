@@ -1,0 +1,258 @@
+#!/usr/bin/env python3
+"""mnn: ask the Press about the paper, from any shell.
+
+    mnn status     did today's paper print, and has the Kindle collected it?
+    mnn health     is the Press fine and, if not, what is wrong?
+    mnn rebuild    print today's edition again (needs the Press token)
+
+Each one is a single HTTP request to the Press (GET /api/status,
+GET /api/health, POST /api/rebuild). The answer is a few plain sentences;
+--json prints the Press's JSON instead.
+
+Settings come from a file, never from the environment, so this works from
+cron, a systemd unit or a Muse gadget's system.run, which all start a command
+with next to nothing set. The first of these that exists is read:
+
+    the file named by --config (which has to exist)
+    ~/.config/mnn/config
+    /etc/mnn/config
+
+    # where the Press answers (default: http://127.0.0.1:8484)
+    url = http://127.0.0.1:8484
+    # the Press's PRESS_TOKEN; only `mnn rebuild` uses it
+    token = a-long-random-string
+
+With no file at all, status and health still work against the default address.
+The file holds a password once it has a token: keep it readable only by the
+account that runs mnn (chmod 600, or 640 with that account's group).
+
+Exit status:
+    0  yes: today's paper is printed / the Press is fine / the reprint worked
+    1  no: not printed today / something is wrong / the reprint failed
+    2  mnn was used wrongly, or its settings file could not be read
+    3  the Press could not be reached, or did not answer as the Press does
+    4  the Press refused: rebuild is off there, or the token is missing or wrong
+
+This is one file that needs only Python 3.9 or later and its standard
+library, which Debian and Raspberry Pi OS already have. To install it:
+
+    sudo install -m 755 bin/mnn /usr/local/bin/mnn
+"""
+
+from __future__ import annotations
+
+import argparse
+import datetime as dt
+import http.client
+import json
+import sys
+import urllib.error
+import urllib.request
+from pathlib import Path
+
+DEFAULT_URL = "http://127.0.0.1:8484"
+CONFIG_PATHS = ("~/.config/mnn/config", "/etc/mnn/config")
+SETTINGS = ("url", "token")
+# A reprint runs every source again, which can take minutes.
+TIMEOUTS = {"status": 15, "health": 15, "rebuild": 330}
+DIRECT = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+
+YES, NO, USAGE, UNREACHABLE, REFUSED = 0, 1, 2, 3, 4
+
+
+class Failure(Exception):
+    """Something to tell the person, and the status to exit with."""
+
+    def __init__(self, message: str, code: int) -> None:
+        super().__init__(message)
+        self.code = code
+
+
+def load_settings(explicit: str | None) -> dict:
+    """The settings file as a dict. Only a file named with --config has to
+    exist; the usual places are optional."""
+    if explicit:
+        candidates = [Path(explicit).expanduser()]
+    else:
+        candidates = [Path(name).expanduser() for name in CONFIG_PATHS]
+    for path in candidates:
+        try:
+            text = path.read_text(encoding="utf-8")
+        except FileNotFoundError:
+            continue
+        except (OSError, ValueError) as exc:
+            raise Failure(f"Could not read the settings file {path}: {exc}", USAGE) from exc
+        settings = {"path": str(path)}
+        for number, line in enumerate(text.splitlines(), 1):
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            key, equals, value = line.partition("=")
+            key, value = key.strip(), value.strip()
+            if not equals or key not in SETTINGS:
+                # The line itself is not shown: it may be a mistyped token.
+                raise Failure(f"{path}, line {number}: expected `url = ...` or "
+                              "`token = ...`", USAGE)
+            if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'":
+                value = value[1:-1]
+            settings[key] = value
+        return settings
+    if explicit:
+        raise Failure(f"There is no settings file at {candidates[0]}.", USAGE)
+    return {}
+
+
+def ask(url: str, command: str, token: str | None) -> tuple[int, dict]:
+    """One request to the Press. Returns (HTTP status, its JSON answer)."""
+    path = f"/api/{command}"
+    headers = {"Accept": "application/json"}
+    data = None
+    if command == "rebuild":
+        data = b""
+        headers["Authorization"] = f"Bearer {token}"
+    try:
+        request = urllib.request.Request(url + path, data=data, headers=headers,
+                                         method="POST" if data is not None else "GET")
+        try:
+            response = DIRECT.open(request, timeout=TIMEOUTS[command])
+        except urllib.error.HTTPError as exc:
+            # The Press answers in JSON when it is unhealthy or refuses, too.
+            response = exc
+        with response:
+            status, body = response.status, response.read()
+    except http.client.InvalidURL as exc:
+        raise Failure(f"The Press address {url!r} cannot be used: {exc}", USAGE) from exc
+    except ValueError as exc:
+        sent = "address or the token" if "Authorization" in headers else "address"
+        raise Failure(f"The Press {sent} cannot be sent as written. "
+                      "Check it for stray characters.", USAGE) from exc
+    except (urllib.error.URLError, OSError) as exc:
+        reason = getattr(exc, "reason", exc)
+        raise Failure(f"Could not reach the Press at {url}: {reason}", UNREACHABLE) from exc
+    except http.client.HTTPException as exc:
+        raise Failure(f"{url}{path} did not answer as the Press does "
+                      "(not a proper HTTP reply).", UNREACHABLE) from exc
+    try:
+        answer = json.loads(body)
+    except ValueError:
+        answer = None
+    outdated = command == "status" and isinstance(answer, dict) and not answer.get("today")
+    if outdated or not isinstance(answer, dict):
+        hint = " Is the Press up to date?" if outdated or status == 404 else ""
+        raise Failure(f"{url}{path} did not answer as the Press does (HTTP {status}).{hint}",
+                      UNREACHABLE)
+    if status in (401, 403):
+        raise Failure(f"The Press refused: {answer.get('error') or f'HTTP {status}'}.", REFUSED)
+    return status, answer
+
+
+def long_date(iso: str | None) -> str:
+    try:
+        date = dt.date.fromisoformat(iso or "")
+    except ValueError:
+        return str(iso)
+    return f"{date:%A, %B} {date.day}"
+
+
+def clock(stamp: str | None) -> str:
+    try:
+        return f"{dt.datetime.fromisoformat(stamp or ''):%H:%M}"
+    except ValueError:
+        return str(stamp)
+
+
+def say_status(answer: dict) -> tuple[list[str], int]:
+    today, newest = answer.get("today"), answer.get("edition_date")
+    last = answer.get("last_print") or {}
+    lines = []
+    if newest is None:
+        lines.append("No paper has been printed yet.")
+    elif newest != today:
+        lines.append(f"Today's paper ({long_date(today)}) has not been printed. "
+                     f"The newest edition is from {long_date(newest)}.")
+    else:
+        printed = f"Today's paper ({long_date(today)}) is printed"
+        collected = last.get("kindle_downloaded_at") if last.get("edition_date") == newest else None
+        if last.get("status") == "failed":
+            lines.append(f"{printed}.")
+        elif collected:
+            lines.append(f"{printed}, and the Kindle collected it at {clock(collected)}.")
+        else:
+            lines.append(f"{printed}. The Kindle has not collected this printing yet.")
+    if last.get("status") == "failed":
+        lines.append(f"The last print failed: {last.get('error')}")
+    for section in answer.get("failed_sections") or []:
+        lines.append(f"Left out: {section.get('title')} ({section.get('error')}).")
+    return lines, YES if newest is not None and newest == today else NO
+
+
+def say_health(answer: dict) -> tuple[list[str], int]:
+    problems, warnings = answer.get("problems") or [], answer.get("warnings") or []
+    fine = answer.get("ok") is True
+    lines = ["The Press is fine." if fine else "The Press has a problem:"]
+    lines += [f"  - {problem.get('message')}" for problem in problems]
+    if warnings:
+        lines.append("Worth a look:")
+        lines += [f"  - {warning.get('message')}" for warning in warnings]
+    return lines, YES if fine else NO
+
+
+def say_rebuild(answer: dict) -> tuple[list[str], int]:
+    if answer.get("ok") is not True:
+        reason = answer.get("error") or answer.get("detail") or "the Press did not say why"
+        return [f"The reprint failed: {reason}"], NO
+    today, newest = answer.get("today"), answer.get("edition_date")
+    if newest == today:
+        return [f"Reprinted today's paper ({long_date(today)})."], YES
+    if newest is None:
+        return ["The Press ran, but there is still no paper to print."], NO
+    return [f"The Press ran, but there is no edition for today yet. "
+            f"The newest is from {long_date(newest)}."], NO
+
+
+SAY = {"status": say_status, "health": say_health, "rebuild": say_rebuild}
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(
+        prog="mnn", description="Ask the Press about the paper.",
+        epilog="Exit status: 0 yes, 1 no, 2 wrong usage or settings, "
+               "3 Press unreachable, 4 Press refused.")
+    parser.add_argument("command", choices=sorted(SAY),
+                        help="status: did the paper land? health: is the Press fine? "
+                             "rebuild: print today's edition again")
+    parser.add_argument("--json", action="store_true",
+                        help="print the Press's JSON answer instead of sentences")
+    parser.add_argument("--url", help="where the Press answers, instead of the settings file's "
+                                      f"url (default: {DEFAULT_URL})")
+    parser.add_argument("--config", metavar="FILE",
+                        help="settings file to read (default: the first of "
+                             + ", ".join(CONFIG_PATHS) + ")")
+    args = parser.parse_args(argv)
+
+    try:
+        settings = load_settings(args.config)
+        url = (args.url or settings.get("url") or DEFAULT_URL).rstrip("/")
+        if not url.startswith(("http://", "https://")):
+            raise Failure(f"The Press address must start with http:// or https://, not {url!r}.",
+                          USAGE)
+        token = settings.get("token")
+        if args.command == "rebuild" and not token:
+            where = settings.get("path") or " or ".join(CONFIG_PATHS)
+            raise Failure(f"A reprint needs the Press token: add `token = ...` to {where}.",
+                          REFUSED)
+        _, answer = ask(url, args.command, token)
+    except Failure as failure:
+        if args.json:
+            print(json.dumps({"ok": False, "error": str(failure)}, indent=2))
+        else:
+            print(failure, file=sys.stderr)
+        return failure.code
+
+    lines, code = SAY[args.command](answer)
+    print(json.dumps(answer, indent=2) if args.json else "\n".join(lines))
+    return code
+
+
+if __name__ == "__main__":
+    sys.exit(main())

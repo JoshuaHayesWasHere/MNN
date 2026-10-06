@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/"
+     xmlns:media="http://search.yahoo.com/mrss/" xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <channel>
+    <title>Fixture World</title>
+    <link>https://world.example/</link>
+    <description>A feed that exists only in the tests</description>
+    <item>
+      <title>Harbour bridge reopens after &amp;amp; repairs</title>
+      <link>https://world.example/bridge</link>
+      <media:title>A caption that is not the headline</media:title>
+      <description><![CDATA[<p>The <b>bridge</b> reopened on Monday.</p><script>alert("x")</script><p>Traffic was light &amp; orderly. <a href="https://world.example/bridge">Continue reading...</a></p>]]></description>
+      <content:encoded><![CDATA[<p>THE FULL ARTICLE TEXT, which must never be printed.</p>]]></content:encoded>
+      <pubDate>Sun, 04 Oct 2026 08:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>Ferry timetable changes for winter</title>
+      <link>javascript:alert(1)</link>
+      <description>Sailings move to an hourly service&#8203; from November.</description>
+      <pubDate>Sat, 03 Oct 2026 08:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>An old story that should have aged out</title>
+      <link>https://world.example/old</link>
+      <description>This item is a month old.</description>
+      <pubDate>Fri, 04 Sep 2026 08:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>A headline with no summary</title>
+      <link>https://world.example/bare</link>
+    </item>
+    <item>
+      <title>Market square gets a new clock</title>
+      <link>https://world.example/clock</link>
+      <description>The old one stopped in 1987.</description>
+      <dc:date>2026-10-04T06:00:00Z</dc:date>
+    </item>
+  </channel>
+</rss>

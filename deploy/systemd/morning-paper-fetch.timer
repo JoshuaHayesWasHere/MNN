@@ -1,0 +1,15 @@
+[Unit]
+Description=Print the Morning Paper
+
+[Timer]
+# 06:40, then every ten minutes until 09:00 in case the feeds were down or
+# the edition is staged late. A run with nothing new does nothing.
+OnCalendar=*-*-* 06:40:00
+OnCalendar=*-*-* 06:50:00
+OnCalendar=*-*-* 07,08:00/10:00
+OnCalendar=*-*-* 09:00:00
+# Check on the next boot if the machine was off.
+Persistent=true
+
+[Install]
+WantedBy=timers.target

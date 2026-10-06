@@ -1,0 +1,11 @@
+# Only what the Dockerfile copies needs to reach the build.
+*
+!pyproject.toml
+!uv.lock
+!src/
+!sources.toml
+!integrations/
+integrations/muse/SKILL.md
+integrations/muse/docker-compose.yml
+!kindle/
+**/__pycache__

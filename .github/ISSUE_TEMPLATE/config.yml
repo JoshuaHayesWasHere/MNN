@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Question, idea, or showing off your paper
+    url: https://github.com/JoshuaHayesWasHere/MNN/discussions
+    about: Ask how to do something, propose a direction, or share your front page.
+  - name: Security problem
+    url: https://github.com/JoshuaHayesWasHere/MNN/security/advisories/new
+    about: Report a vulnerability privately. Please do not open a public issue.

@@ -1,0 +1,46 @@
+name: Bug report
+description: Something does not work the way the docs say it does.
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you expected, and what you got instead.
+    validations:
+      required: true
+  - type: dropdown
+    id: part
+    attributes:
+      label: Which part
+      options:
+        - The Press (printing, sources, the server)
+        - The Kindle side
+        - An agent (inbox, staging, Muse)
+        - The installer
+        - The docs
+        - Not sure
+    validations:
+      required: true
+  - type: textarea
+    id: status
+    attributes:
+      label: What the Press says
+      description: The output of `make status` and `make health`, or of `/api/status` and `/api/health`. They carry no story text.
+      render: json
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: The relevant lines of `make logs`, or of `/mnt/us/mnn/mnn.log` on the Kindle. Remove anything private first, such as a token or an inbox file's contents.
+      render: text
+  - type: input
+    id: host
+    attributes:
+      label: Where the Press runs
+      placeholder: Raspberry Pi 4, Raspberry Pi OS 64-bit, installed with install.sh
+  - type: input
+    id: device
+    attributes:
+      label: E-reader, firmware and KOReader version
+      placeholder: Kindle Paperwhite 11, firmware 5.18.1, KOReader 2026.03

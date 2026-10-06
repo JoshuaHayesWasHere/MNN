@@ -1,0 +1,59 @@
+# What the Press prints when nobody else is writing the paper.
+#
+# This is the default, baked into the image. To make the paper your own, copy
+# this file to config/sources.toml (next to docker-compose.yml) and edit it:
+# the Press reads it fresh before every print, so a saved change is in
+# tomorrow's paper with no rebuild and no restart.
+#
+# Each [[section]] is one section of the paper, printed in this order. The
+# first one leads the front page.
+#
+#   title    the section's name
+#   feeds    RSS or Atom addresses; stories are taken from them in turn
+#   stories  how many stories to print
+#
+# Optional, per section: timeout (seconds the whole section may take, default
+# 60), feed_timeout (seconds each feed may take, default 20), max_age_days
+# (skip older items, default 3), and source (what writes the section instead
+# of the feed reader: "inbox", "ask" (a question put to a Muse at print time),
+# or a module of your own; see docs/sources.md).
+#
+# Only each feed's own headline and summary are printed, with a link back.
+
+# title = "The Morning Paper"
+# note = "A line printed at the foot of the front page"
+
+# The forecast on the front page. Without this there is no weather line.
+# [weather]
+# location = "Lisbon"
+# latitude = 38.72
+# longitude = -9.14
+
+[[section]]
+title = "Front Page"
+feeds = ["https://feeds.bbci.co.uk/news/rss.xml"]
+stories = 3
+
+[[section]]
+title = "World"
+feeds = [
+    "https://www.theguardian.com/world/rss",
+    "https://www.aljazeera.com/xml/rss/all.xml",
+]
+stories = 5
+
+[[section]]
+title = "Technology"
+feeds = [
+    "https://feeds.arstechnica.com/arstechnica/index",
+    "https://feeds.bbci.co.uk/news/technology/rss.xml",
+]
+stories = 5
+
+[[section]]
+title = "Science"
+feeds = [
+    "https://www.sciencedaily.com/rss/top/science.xml",
+    "https://feeds.npr.org/1007/rss.xml",
+]
+stories = 5

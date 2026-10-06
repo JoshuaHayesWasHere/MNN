@@ -1,0 +1,60 @@
+name: check
+
+# Sized to stay cheap: one short job, no Docker build, no browsers, no matrix.
+# No path filters, so every pull request (docs-only included) gets a check.
+# It also runs on main after a merge, so the README badge shows main's state.
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: check-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install shellcheck
+        env:
+          SHELLCHECK_VERSION: 0.11.0
+          SHELLCHECK_SHA256: 8c3be12b05d5c177a04c29e3c78ce89ac86f1595681cab149b65b97c4e227198
+        run: |
+          # The runner's own shellcheck is 0.9.0, which has no BusyBox dialect
+          # and flags trap handlers as unreachable code (SC2317).
+          curl -fsSL -o shellcheck.tar.xz "https://github.com/koalaman/shellcheck/releases/download/v${SHELLCHECK_VERSION}/shellcheck-v${SHELLCHECK_VERSION}.linux.x86_64.tar.xz"
+          echo "${SHELLCHECK_SHA256}  shellcheck.tar.xz" | sha256sum -c -
+          tar -xJf shellcheck.tar.xz
+          sudo install "shellcheck-v${SHELLCHECK_VERSION}/shellcheck" /usr/local/bin/shellcheck
+          rm -rf shellcheck.tar.xz "shellcheck-v${SHELLCHECK_VERSION}"
+          shellcheck --version
+
+      - name: Shellcheck
+        run: |
+          # Scripts under kindle/ run in the Kindle's BusyBox shell, so they
+          # are held to POSIX sh whatever their shebang says.
+          git ls-files -z 'kindle/*.sh' | xargs -0 -r shellcheck --shell=sh
+          git ls-files -z '*.sh' ':!kindle/*.sh' | xargs -0 -r shellcheck
+
+      - uses: astral-sh/setup-uv@v10.2.0
+        with:
+          enable-cache: true
+
+      - name: Byte-compile the Python sources
+        run: git ls-files -z '*.py' | xargs -0 -r uv run --locked python -m py_compile
+
+      - name: Tests
+        run: |
+          if [ -d tests ]; then
+            uv run --locked pytest
+          else
+            echo "No tests directory, nothing to run."
+          fi

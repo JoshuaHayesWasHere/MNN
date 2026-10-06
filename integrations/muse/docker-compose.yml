@@ -1,0 +1,43 @@
+# Lets the Press reach the Muse gadget service that runs on the host, so it can
+# send its morning messages (MUSE_MESSAGES in .env), ask for its card
+# (MUSE_CARD_URL) and put a question to Muse at print time (a section with
+# source = "ask"). Use it on top of the main file, most easily by putting this
+# line in .env:
+#
+#   COMPOSE_FILE=docker-compose.yml:integrations/muse/docker-compose.yml
+#
+# The gadget's socket is owned by root and the group of the account the gadget
+# runs commands as, mode 0660. The container's user is in neither, so it is
+# given that group by number:
+#
+#   MUSE_GID=$(stat -c %g /run/musegadget/musegadget.sock)
+#
+# The directory is mounted, not the socket: the service makes a new socket
+# each time it starts, and a mount of the old one would go dead. As installed,
+# the service's unit does the same to the directory, removing it on stop and
+# making a new one on start, so have systemd keep it, with a drop-in for the
+# unit (sudo systemctl edit musegadget):
+#
+#   [Service]
+#   RuntimeDirectoryPreserve=yes
+#
+# Without it the messages are dropped, and the question goes unasked, once the
+# service has restarted, until the containers are recreated.
+#
+# Untested against a paired gadget.
+
+services:
+  # Sends the morning messages and the card request. paper_rebuild and POST
+  # /api/rebuild run here too, and ask when the day's question has not gone
+  # out yet.
+  press-server:
+    volumes:
+      - ${MUSE_RUN_DIR:-/run/musegadget}:/run/musegadget
+    group_add:
+      - "${MUSE_GID:?set MUSE_GID in .env to the group of the gadget socket}"
+  # Prints the paper, so it is the one that asks at print time.
+  press-fetch:
+    volumes:
+      - ${MUSE_RUN_DIR:-/run/musegadget}:/run/musegadget
+    group_add:
+      - "${MUSE_GID:?set MUSE_GID in .env to the group of the gadget socket}"

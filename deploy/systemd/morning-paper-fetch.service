@@ -1,0 +1,15 @@
+[Unit]
+Description=Morning Paper: print today's edition
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=%h/repos/MNN
+# Optional: STAGE_URL and STAGE_TOKEN, to print a staged edition. Without the
+# file the Press writes its own paper from ~/.config/morning-paper/sources.toml,
+# or from the default sources.toml in the repository.
+EnvironmentFile=-%h/.config/morning-paper/env
+# Exits quietly when there is nothing new. A failure shows up in
+# `systemctl --user --failed`, in press/report.json, and in the receipt.
+ExecStart=/usr/bin/uv run mnn-press fetch --fetch-weather

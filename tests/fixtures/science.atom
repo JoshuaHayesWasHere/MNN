@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Fixture Science</title>
+  <link href="https://science.example/"/>
+  <updated>2026-10-04T07:00:00Z</updated>
+  <entry>
+    <title type="html">Moss grows &lt;em&gt;faster&lt;/em&gt; in the dark</title>
+    <link rel="self" href="https://science.example/api/moss"/>
+    <link rel="alternate" href="https://science.example/moss"/>
+    <summary type="html">&lt;p&gt;A small study found a surprising result.&lt;/p&gt;</summary>
+    <updated>2026-10-04T07:00:00Z</updated>
+  </entry>
+  <entry>
+    <title>Harbour bridge reopens after &amp; repairs</title>
+    <link href="https://science.example/bridge-engineering"/>
+    <summary>The same headline as another feed, so it is printed once.</summary>
+    <updated>2026-10-04T06:30:00Z</updated>
+  </entry>
+  <entry>
+    <title type="xhtml"><div xmlns="http://www.w3.org/1999/xhtml">Telescope sees <em>first</em> light</div></title>
+    <link href="https://science.example/telescope"/>
+    <content type="xhtml"><div xmlns="http://www.w3.org/1999/xhtml"><p>Engineers called the images <i>sharp</i>.</p><style>p { color: red }</style><script>track("telescope")</script><p>The mirror took a decade to grind.<br/>It was worth the wait.</p></div></content>
+    <published>2026-10-03T21:00:00+02:00</published>
+  </entry>
+</feed>

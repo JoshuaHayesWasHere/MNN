@@ -1,0 +1,114 @@
+# The whole Press in one file.
+#
+#   docker compose up -d                      the Press: server and fetcher,
+#                                             writing its own paper from feeds
+#   docker compose --profile staging up -d    plus a staging server, for a
+#                                             self-contained demo
+#   docker compose --profile gadget up -d     plus the gadget scaffold
+#
+# Anything the Press sends to a paired Muse gadget needs the host's gadget
+# socket inside the Press; integrations/muse/docker-compose.yml adds that mount (see
+# docs/muse.md).
+#
+# It runs with no .env at all. Settings, all optional, come from .env (copy
+# .env.example). Your own files (see "Where your files live" in docs/sources.md)
+# go in ./config, which is mounted read-only at /config. Section files left
+# in ./inbox, which is mounted at /inbox, are printed by the inbox source.
+# The only other state is the press-data volume.
+
+x-press: &press
+  image: mnn-press
+  build: .
+  restart: unless-stopped
+  environment: &press-env
+    TZ: ${TZ:-UTC}
+    # Unset, the Press writes its own paper. Set, it prints what is staged.
+    STAGE_URL: ${STAGE_URL:-}
+    STAGE_TOKEN: ${STAGE_TOKEN:-}
+    # Off unless set: what the Press tells a paired Muse gadget each morning.
+    MUSE_MESSAGES: ${MUSE_MESSAGES:-off}
+    MUSE_DETAIL: ${MUSE_DETAIL:-counts}
+    MUSE_KINDLE_WAIT: ${MUSE_KINDLE_WAIT:-60}
+    MUSE_SESSION_ID: ${MUSE_SESSION_ID:-}
+    # Off unless set: the card's address, as a Muse display board reaches it.
+    MUSE_CARD_URL: ${MUSE_CARD_URL:-}
+
+services:
+  press-server:
+    <<: *press
+    command: ["python", "-m", "mnn", "server", "--edition-time", "${EDITION_TIME:-06:40}"]
+    environment:
+      <<: *press-env
+      # Unset, POST /api/rebuild is off. Set, it needs this token.
+      PRESS_TOKEN: ${PRESS_TOKEN:-}
+    ports:
+      - "${PRESS_PORT:-8484}:8484"
+    volumes:
+      - press-data:/data
+      - ${PRESS_CONFIG:-./config}:/config:ro
+      # Writable here too: paper_rebuild and POST /api/rebuild run in this
+      # container, and the inbox source moves each file it prints.
+      - ${PRESS_INBOX:-./inbox}:/inbox
+    healthcheck:
+      # Healthy means the server answers. 503 is its reply when no paper has
+      # been printed yet, which is the normal state of a new install.
+      test:
+        - CMD
+        - python
+        - -c
+        - |
+          import sys, urllib.request, urllib.error
+          try:
+              urllib.request.urlopen("http://127.0.0.1:8484/api/display", timeout=5)
+          except urllib.error.HTTPError as exc:
+              sys.exit(0 if exc.code == 503 else 1)
+          except Exception:
+              sys.exit(1)
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  press-fetch:
+    <<: *press
+    # Appears as "press" in the receipt, rather than a container id.
+    hostname: press
+    command: ["python", "-m", "mnn", "fetch", "--loop", "--fetch-weather",
+              "--at", "${EDITION_TIME:-06:40}"]
+    volumes:
+      - press-data:/data
+      - ${PRESS_CONFIG:-./config}:/config:ro
+      - ${PRESS_INBOX:-./inbox}:/inbox
+    depends_on:
+      - press-server
+
+  press-gadget:
+    <<: *press
+    profiles: ["gadget"]
+    command: ["python", "integrations/muse/gadget/gadget.py"]
+    environment:
+      <<: *press-env
+      MUSEGADGET_SDK_TOKEN: ${MUSEGADGET_SDK_TOKEN:-}
+      PAPER_SERVER: http://press-server:8484
+    volumes:
+      - press-data:/data
+      - ${PRESS_CONFIG:-./config}:/config:ro
+      - ${PRESS_INBOX:-./inbox}:/inbox
+    depends_on:
+      - press-server
+
+  # Optional: a staging server on the same machine. Real use puts staging
+  # somewhere the edition's author can reach over HTTPS; this one speaks plain
+  # HTTP and is for trying the whole chain with `docker compose up`.
+  stage:
+    <<: *press
+    profiles: ["staging"]
+    command: ["python", "-m", "mnn", "stage", "--insecure-http"]
+    ports:
+      - "${STAGE_PORT:-8485}:8485"
+    volumes:
+      - stage-data:/data
+
+volumes:
+  press-data:
+  stage-data:

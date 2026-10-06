@@ -1,0 +1,52 @@
+name: Device report
+description: You tried MNN on an e-reader. Tell us how it went, working or not.
+title: "Device report: "
+labels: ["device report"]
+body:
+  - type: markdown
+    attributes:
+      value: The Kindle side has been tried on very few devices, so every report helps, and "it just worked" is as useful as a failure.
+  - type: input
+    id: device
+    attributes:
+      label: Device
+      placeholder: Kindle Paperwhite 11 (2021)
+    validations:
+      required: true
+  - type: input
+    id: firmware
+    attributes:
+      label: Firmware
+      placeholder: 5.18.1
+    validations:
+      required: true
+  - type: input
+    id: koreader
+    attributes:
+      label: KOReader version
+  - type: dropdown
+    id: install
+    attributes:
+      label: How you installed it on the device
+      options:
+        - Copied Install MNN.sh over USB and chose Execute
+        - Typed the line in KOReader's terminal
+        - Only the OPDS catalog, nothing installed
+        - Something else
+    validations:
+      required: true
+  - type: checkboxes
+    id: worked
+    attributes:
+      label: What worked
+      options:
+        - label: The install finished
+        - label: The paper appeared in KOReader's library
+        - label: The front page was drawn on sleep
+        - label: The device woke by itself the next morning and fetched the new paper
+        - label: The Press recorded the download (`make status`)
+  - type: textarea
+    id: notes
+    attributes:
+      label: What did not, and anything else
+      description: Lines from `/mnt/us/mnn/mnn.log` are very welcome.

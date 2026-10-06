@@ -1,0 +1,19 @@
+[Unit]
+Description=Morning Paper LAN server (port 8484, LAN only, no TLS)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+WorkingDirectory=%h/repos/MNN
+# Optional: STAGE_URL and STAGE_TOKEN live here, readable only by you. They
+# are only needed when a staged edition is printed. MUSE_MESSAGES and the
+# other MUSE_ settings (messages to Muse, see docs/muse.md) go here too, and so
+# does PRESS_TOKEN, to turn POST /api/rebuild on.
+EnvironmentFile=-%h/.config/morning-paper/env
+# Keep --edition-time in step with morning-paper-fetch.timer.
+ExecStart=/usr/bin/uv run mnn-press server --edition-time 06:40
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=default.target

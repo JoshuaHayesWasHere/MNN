@@ -1,0 +1,164 @@
+{
+  "title": "The Morning Paper",
+  "date": "2026-10-03",
+  "weather": {
+    "location": "Port Avery",
+    "summary": "Partly cloudy, high 64°F, low 48°F, 20% chance of rain"
+  },
+  "sections": [
+    {
+      "title": "Front Page",
+      "articles": [
+        {
+          "title": "Council approves all-night bus network after two years of debate",
+          "deck": "Six routes will run every half hour between midnight and five from January, paid for by a parking levy on the city centre.",
+          "source": "City desk",
+          "url": "https://example.org/port-avery/night-bus-network",
+          "body": [
+            "Port Avery will have buses running through the night for the first time in thirty years after the city council voted nine to four on Friday to fund a network of six overnight routes.",
+            "The routes follow the busiest daytime corridors and meet at the central station, where a timed connection lets passengers change between any two lines without waiting more than ten minutes. Services start in the first week of January.",
+            "The network costs 4.2 million a year. Most of that comes from a new levy on city centre car parks, which opponents on the council called a tax on shift workers who drive. Supporters replied that shift workers are the people most likely to use the buses.",
+            "Hospital staff, hotel workers and students made up most of the speakers at the public hearing. A porter at the general hospital told councillors that her journey home after a late shift takes ninety minutes on foot and would take twenty by bus.",
+            "The transit agency will report on passenger numbers after six months. Routes carrying fewer than eight people an hour may be shortened or merged."
+          ],
+          "quote": "After a late shift it takes me ninety minutes to walk home. The bus would do it in twenty.",
+          "quote_by": "A porter at the general hospital",
+          "why": "Anyone who works or studies late gets a ride home every half hour instead of a long walk or a taxi fare. Anyone who parks in the city centre helps pay for it."
+        },
+        {
+          "title": "Harbour bridge to close for three weekends of repairs",
+          "deck": "Inspectors found worn bearings under the eastern span. Ferries will run a free shuttle while the road is shut.",
+          "source": "City desk",
+          "body": [
+            "The harbour bridge will close to all traffic on the last three weekends of October while engineers replace bearings under its eastern span.",
+            "The fault was found during a routine inspection in August. The bridge is safe to use in the meantime, the roads department said, but the work cannot be done with traffic on the deck.",
+            "Closures run from ten on Friday night to five on Monday morning. A free ferry shuttle will cross every fifteen minutes from the fish market pier, and the inland route by the ring road adds about twenty minutes by car."
+          ]
+        },
+        {
+          "title": "Library opening hours restored after budget reprieve",
+          "source": "Staff report",
+          "body": [
+            "All seven branch libraries will return to six-day opening from Monday. A one-off grant from the regional government covers the shortfall that closed them on Wednesdays and Saturdays over the summer."
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Local",
+      "articles": [
+        {
+          "title": "Riverside school reopens with a new roof and a waiting list",
+          "deck": "Storm damage kept pupils in temporary classrooms for eleven months.",
+          "source": "Education desk",
+          "body": [
+            "Pupils at Riverside Primary walked back into their own building on Friday, eleven months after a winter storm tore off a third of its roof.",
+            "The repair grew into a rebuild once surveyors opened the ceilings and found the timber frame had been wet for years. The new roof is steel, carries solar panels, and came in slightly under its revised budget.",
+            "Enrolment has risen while the school was away. The head teacher said forty families are on the waiting list for next autumn, the most the school has recorded."
+          ]
+        },
+        {
+          "title": "Volunteers count record number of seals on the north sandbank",
+          "source": "Staff report",
+          "body": [
+            "The autumn seal count found 412 animals hauled out on the north sandbank last weekend, up from 351 a year ago and the highest figure since the survey began.",
+            "Organisers credit quieter water since the speed limit for pleasure boats came in. Walkers are asked to keep dogs on leads along the dune path until the pupping season ends in December."
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Business",
+      "articles": [
+        {
+          "title": "Cannery site to become workshops for small manufacturers",
+          "deck": "The first units open in spring, with rents fixed for five years.",
+          "source": "Business desk",
+          "url": "https://example.org/port-avery/cannery-workshops",
+          "body": [
+            "The old cannery on Quay Street, empty since 2019, is to be divided into forty workshops for small manufacturers under a plan approved this week.",
+            "A local development trust bought the building last year. It will keep the brick shell and the loading docks, and fit each unit with three-phase power and its own roller door. A bakery, a boat repairer and a maker of bicycle frames have signed for the first units.",
+            "Rents are fixed for five years. The trust said predictable costs matter more to firms of this size than a low opening price."
+          ]
+        },
+        {
+          "title": "Saturday market traders report their best summer in a decade",
+          "source": "Business desk",
+          "body": [
+            "Takings at the Saturday market rose by about a fifth this summer, according to a survey of stallholders by the traders' association.",
+            "Dry weekends helped, as did the decision to close Market Street to cars until two in the afternoon. The association will ask the council to make the closure permanent."
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Science",
+      "articles": [
+        {
+          "title": "Tide gauge data shows the harbour is silting faster than forecast",
+          "deck": "University researchers say dredging may be needed two years early.",
+          "source": "Science desk",
+          "body": [
+            "Sediment is settling in the inner harbour about a third faster than the port's last survey predicted, according to researchers at the regional university who compared fifteen years of tide gauge and depth records.",
+            "The team links the change to wetter winters, which wash more soil down the river. Their paper suggests the main channel will need dredging in 2028 rather than 2030.",
+            "The port authority said it would commission a fresh depth survey before changing its plans."
+          ]
+        },
+        {
+          "title": "Clear skies expected for Tuesday's partial lunar eclipse",
+          "source": "Science desk",
+          "body": [
+            "A partial eclipse of the moon will be visible from the whole region on Tuesday evening, weather permitting. The shadow first touches the moon shortly after eight and covers about half of it an hour later.",
+            "No equipment is needed. The astronomy society will set up telescopes on the headland car park from half past seven for anyone who wants a closer look."
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Culture",
+      "articles": [
+        {
+          "title": "Film festival opens with a documentary about the last lighthouse keepers",
+          "deck": "Sixty films over ten days, half of them from first-time directors.",
+          "source": "Arts desk",
+          "body": [
+            "The Port Avery film festival opens on Thursday with a documentary about the families who kept the coast's lighthouses before automation.",
+            "This year's programme has sixty films across three venues. Half are by directors showing their first feature, and every screening before five in the afternoon is free for under-eighteens.",
+            "The closing night film will be chosen by audience vote."
+          ]
+        },
+        {
+          "title": "Review: a quiet, exact production of a familiar play",
+          "source": "Arts desk",
+          "body": [
+            "The repertory theatre's autumn production trusts its script. The set is a table, four chairs and a window, and the cast speak as though nobody is listening, which is why you do.",
+            "It runs for two hours without an interval and does not feel long. At the Playhouse until the end of the month."
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Sport",
+      "articles": [
+        {
+          "title": "Late penalty sends Avery Rovers through to the cup quarter-final",
+          "deck": "A goal in the eighty-eighth minute settled a scrappy tie in front of a full ground.",
+          "source": "Sports desk",
+          "body": [
+            "Avery Rovers reached the quarter-final of the regional cup on Friday night with a one-nil win decided by a penalty two minutes from time.",
+            "Neither side managed a shot on target in the first half. The game opened up after the hour, and the home side hit the post twice before a handball in the area gave them the chance they needed.",
+            "The draw for the next round is on Monday."
+          ]
+        },
+        {
+          "title": "Harbour swim draws 600 entrants despite cold water",
+          "source": "Sports desk",
+          "body": [
+            "Six hundred swimmers finished the annual harbour crossing on Sunday in water measured at 57 degrees. The fastest covered the 1,500 metres in just under nineteen minutes.",
+            "Entries for next year open in March."
+          ]
+        }
+      ]
+    }
+  ]
+}
