@@ -311,6 +311,7 @@ So a cron line that speaks up only when something is wrong is
 
 | Endpoint | Returns |
 | --- | --- |
+| `GET /` | A page for a browser: the newest front page, the paper to download, earlier papers, and how to get it onto a reader |
 | `GET /opds` | OPDS 1.2 feed of every stored EPUB, newest first |
 | `GET /paper/<file>.epub` | One EPUB |
 | `GET /paper/latest.txt` | File name of the newest EPUB, as plain text |

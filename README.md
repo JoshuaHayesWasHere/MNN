@@ -32,6 +32,19 @@ lays the paper out for e-ink, prints it, and gets it onto the Kindle.
 
 It targets a Kindle Paperwhite 11 (1236x1648, 300 ppi) with KOReader.
 
+## Try it in two minutes
+
+No e-reader needed. With Docker installed:
+
+```sh
+git clone https://github.com/JoshuaHayesWasHere/MNN.git && cd MNN
+make up
+```
+
+Then open <http://localhost:8484/>. The Press prints its first paper within a
+minute or two, and the page shows the front page, with the paper to download
+and the ways to get it onto a reader.
+
 ## Install
 
 On a Raspberry Pi running the 64-bit Raspberry Pi OS, or any Debian or Ubuntu
@@ -70,7 +83,6 @@ Working from a clone instead? `make up` builds and starts the same thing,
 and `make help` lists the rest:
 
 ```sh
-git clone https://github.com/JoshuaHayesWasHere/MNN.git && cd MNN
 make up        # build and start the Press
 make status    # did today's paper print, and has the Kindle collected it?
 make reprint   # print today's paper again

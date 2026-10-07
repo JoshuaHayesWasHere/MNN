@@ -10,6 +10,7 @@ help: ## List these commands
 
 up: ## Build and start the Press (the whole thing; needs only Docker)
 	docker compose up -d --build
+	@echo "The Press is starting. Open http://localhost:$(or $(PRESS_PORT),8484)/ to see the paper."
 
 down: ## Stop the Press; papers already printed are kept
 	docker compose down
