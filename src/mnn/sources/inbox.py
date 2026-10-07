@@ -64,7 +64,7 @@ DEFAULT_MAX_AGE_DAYS = 1
 LONGEST_MAX_AGE_DAYS = 7
 DEFAULT_STORIES = 10
 DEFAULT_KEEP_DAYS = 14
-ARTICLE_KEYS = ("title", "body", "deck", "source", "url", "quote", "quote_by", "why")
+ARTICLE_KEYS = ("title", "body", "deck", "source", "url", "quote", "quote_by", "why", "grid")
 
 
 class Unprintable(Exception):

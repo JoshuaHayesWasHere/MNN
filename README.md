@@ -24,7 +24,7 @@ lays the paper out for e-ink, prints it, and gets it onto the Kindle.
 - **Or written by your own agent.** Anything that can write a JSON file or
   make an HTTP request can write for the paper.
 - **Laid out for e-ink.** A front page the Kindle draws on wake, and an EPUB
-  with a contents page and a way back from every story.
+  with a contents page, a way back from every story, and a sudoku at the end.
 - **One line to install** on a Raspberry Pi or any Debian or Ubuntu machine,
   and one file to copy onto the Kindle.
 - **Self-hosted.** The Press runs on your network, with no account and no

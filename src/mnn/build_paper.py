@@ -108,6 +108,15 @@ div.box p.label { font-weight: bold; font-size: 0.7em; letter-spacing: 0.1em;
 p.source { text-indent: 0; text-align: left; font-size: 0.78em; margin-top: 1.2em;
   border-top: 1px solid #000; padding-top: 0.5em; }
 
+table.grid { page-break-inside: avoid; clear: both; border-collapse: collapse;
+  margin: 1.2em auto; border: 3px solid #000; }
+table.grid td { width: 1.9em; height: 1.9em; padding: 0; text-align: center;
+  vertical-align: middle; font-size: 1.25em; font-weight: bold; line-height: 1;
+  border: 1px solid #000; }
+table.grid td.r { border-right: 3px solid #000; }
+table.grid td.b { border-bottom: 3px solid #000; }
+table.grid td.r.b { border-right: 3px solid #000; border-bottom: 3px solid #000; }
+
 div.wayout { page-break-inside: avoid; margin-top: 1.4em; }
 p.next { text-indent: 0; text-align: left; font-size: 0.95em; }
 p.next b { font-size: 0.74em; letter-spacing: 0.1em; text-transform: uppercase;
@@ -181,6 +190,8 @@ class Article:
     quote: str = ""
     quote_by: str = ""
     why: str = ""
+    # A number puzzle: nine rows of nine cells, a digit or "." for an empty one.
+    grid: tuple[str, ...] = ()
 
     @property
     def minutes(self) -> int:
@@ -239,6 +250,20 @@ def _paragraphs(raw: object, where: str) -> tuple[str, ...]:
     return paragraphs
 
 
+GRID_SIDE = 9
+GRID_ROW_RE = re.compile(rf"[1-9.]{{{GRID_SIDE}}}")
+
+
+def _grid(raw: object, where: str) -> tuple[str, ...]:
+    if raw is None:
+        return ()
+    if not isinstance(raw, list) or len(raw) != GRID_SIDE \
+            or not all(isinstance(row, str) and GRID_ROW_RE.fullmatch(row) for row in raw):
+        raise EditionError(f"{where}: 'grid' must be {GRID_SIDE} rows of {GRID_SIDE} cells, "
+                           'each a digit from 1 to 9 or "." for an empty cell')
+    return tuple(raw)
+
+
 def _article(raw: object, where: str) -> Article:
     if not isinstance(raw, dict):
         raise EditionError(f"{where}: must be an object")
@@ -254,6 +279,7 @@ def _article(raw: object, where: str) -> Article:
         quote=_text(raw, "quote", where),
         quote_by=_text(raw, "quote_by", where),
         why=_text(raw, "why", where),
+        grid=_grid(raw.get("grid"), where),
     )
 
 
@@ -757,6 +783,21 @@ def _first_paragraph(text: str) -> str:
     return f'<p class="first">{_esc(text)}</p>'
 
 
+def _grid_table(grid: tuple[str, ...]) -> str:
+    """The puzzle as a table: heavy rules round each box of three, and the
+    empty cells left empty."""
+    rows = []
+    for r, row in enumerate(grid):
+        cells = []
+        for c, cell in enumerate(row):
+            edges = " ".join(name for name, on in (("r", c % 3 == 2 and c < GRID_SIDE - 1),
+                                                   ("b", r % 3 == 2 and r < GRID_SIDE - 1)) if on)
+            cells.append(f'<td{f" class=\"{edges}\"" if edges else ""}>'
+                         f'{cell if cell != "." else "&#160;"}</td>')
+        rows.append(f"<tr>{''.join(cells)}</tr>")
+    return f'<table class="grid">{"".join(rows)}</table>'
+
+
 def _article_body(section: Section, article: Article, *, number: int, section_href: str,
                   following: tuple[str, str, str] | None) -> str:
     """`following` is (label, title, href) for what comes after this story, or
@@ -767,7 +808,9 @@ def _article_body(section: Section, article: Article, *, number: int, section_hr
     ]
     if article.deck:
         parts.append(f'<p class="deck">{_esc(article.deck)}</p>')
-    byline = " \u00b7 ".join(filter(None, (article.source, f"{article.minutes} minute read")))
+    # A puzzle is not read by the minute.
+    length = "Puzzle" if article.grid else f"{article.minutes} minute read"
+    byline = " \u00b7 ".join(filter(None, (article.source, length)))
     parts.append(f'<p class="byline">{_esc(byline)}</p>')
 
     # The pull quote sits after the second paragraph, or after the only one.
@@ -783,6 +826,8 @@ def _article_body(section: Section, article: Article, *, number: int, section_hr
             who = f'<p class="who">{_esc(article.quote_by)}</p>' if article.quote_by else ""
             parts.append(f'<blockquote class="pull"><p>\u201c{_esc(article.quote)}\u201d</p>'
                          f"{who}</blockquote>")
+    if article.grid:
+        parts.append(_grid_table(article.grid))
     if article.why:
         parts.append(f'<div class="box"><p class="label">Why it matters</p>'
                      f"<p>{_esc(article.why)}</p></div>")

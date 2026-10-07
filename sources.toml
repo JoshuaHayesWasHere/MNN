@@ -16,8 +16,8 @@
 # 60), feed_timeout (seconds each feed may take, default 20), max_age_days
 # (skip older items, default 3), and source (what writes the section instead
 # of the feed reader: "editor" (Claude chooses and rewrites the stories),
-# "inbox", "ask" (a question put to a Muse at print time), or a module of your
-# own; see docs/sources.md).
+# "sudoku" (the day's puzzle), "inbox", "ask" (a question put to a Muse at
+# print time), or a module of your own; see docs/sources.md).
 #
 # The front page below is written by the editor once ANTHROPIC_API_KEY is set
 # in .env. Until then it is printed straight from its feeds, like the rest.
@@ -67,3 +67,8 @@ feeds = [
     "https://feeds.npr.org/1007/rss.xml",
 ]
 stories = 5
+
+[[section]]
+title = "Puzzles"
+source = "sudoku"
+difficulty = "medium"

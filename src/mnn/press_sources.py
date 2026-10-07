@@ -295,6 +295,8 @@ def _check(spec: SectionSpec, result: object) -> tuple[dict, list[str]]:
         entry.update({key: _printable(value)
                       for key in ("deck", "source", "url", "quote", "quote_by", "why")
                       if (value := getattr(article, key))})
+        if article.grid:
+            entry["grid"] = list(article.grid)
         articles.append(entry)
     return {"title": _printable(section.title), "articles": articles}, notes
 

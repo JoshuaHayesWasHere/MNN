@@ -295,7 +295,7 @@ def test_only_the_keys_an_article_has_are_passed_on(folder):
     leave(folder, "2026-10-05.json", {"articles": [{
         "title": "Full", "deck": "A deck", "source": "Muse", "url": "https://example.com/a",
         "body": "One.\n\nTwo.", "quote": "Q", "quote_by": "Someone", "why": "Because",
-        "extra": {"ignored": True}}]})
+        "grid": ["123456789"] * 9, "extra": {"ignored": True}}]})
     [article] = produce()["articles"]
     assert set(article) == set(inbox.ARTICLE_KEYS)
     assert article["body"] == "One.\n\nTwo."

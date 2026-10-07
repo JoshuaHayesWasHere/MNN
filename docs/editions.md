@@ -40,6 +40,9 @@ and what a remote author stages. `edition/sample.json` is a complete example.
   build.
 - `body` is plain text: a list of paragraphs, or one string with blank lines
   between paragraphs. There is no inline markup.
+- `grid` is optional: a number puzzle drawn under the story's text. It is
+  nine strings of nine characters, each a digit from 1 to 9 or `.` for an
+  empty cell, such as `"6.9..2..."`.
 - `quote`, `quote_by` and `why` are optional. A story without them simply has
   no pull quote or boxed note.
 - `weather` is optional; without it the front page has no weather line.

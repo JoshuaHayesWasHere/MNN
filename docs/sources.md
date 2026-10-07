@@ -65,6 +65,23 @@ ANTHROPIC_API_KEY=sk-ant-...
 - **Not yet run against the live API here.** The request was written against
   the Anthropic SDK and is tested with a stand-in for Claude.
 
+## The puzzle page
+
+A section with `source = "sudoku"` prints the day's sudoku, with its solution
+on the next page. The default paper ends with one.
+
+```toml
+[[section]]
+title = "Puzzles"
+source = "sudoku"
+difficulty = "medium"      # easy, medium or hard
+```
+
+The puzzle is made from the date, so a reprint carries the same one, and
+every puzzle has exactly one solution. Nothing is fetched. An e-reader shows
+the grid; there is no writing on the page, so the solving is done on paper or
+in your head.
+
 ## Choosing your feeds
 
 The default paper is [`sources.toml`](../sources.toml), baked into the image: a
@@ -209,7 +226,8 @@ strings recorded with its outcome. A source with nothing to say today returns
 no articles and `empty`, a string saying why: its section is left out without
 counting as a failure.
 `source` defaults to `rss`; a module in `config/` wins over a built-in one of
-the same name (the others are [`editor`](#the-editor), [`inbox`](#the-inbox) and
+the same name (the others are [`editor`](#the-editor), [`sudoku`](#the-puzzle-page),
+[`inbox`](#the-inbox) and
 [`ask`](muse.md#asking-muse-at-print-time)). The image carries the standard library,
 Pillow, ebooklib and the Anthropic SDK, and a source can import the modules beside it.
 

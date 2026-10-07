@@ -52,8 +52,9 @@ def test_the_default_sources_toml_is_a_paper_of_public_feeds():
     assert len(paper.sections) >= 3
     # The front page is the editor's; with no key it prints from its feeds.
     assert [spec.source for spec in paper.sections][0] == "editor"
-    for spec in paper.sections:
-        assert spec.source in ("rss", "editor")
+    feeds = [spec for spec in paper.sections if spec.source in ("rss", "editor")]
+    assert len(feeds) >= 3 and {spec.source for spec in paper.sections} <= {"rss", "editor", "sudoku"}
+    for spec in feeds:
         assert spec.config["stories"] > 0
         assert spec.config["feeds"]
         assert all(feed.startswith("https://") for feed in spec.config["feeds"])
