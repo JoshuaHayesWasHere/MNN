@@ -55,6 +55,13 @@
   as data under the inbox's rules, and like the inbox it ends up in a paper
   anyone on the LAN can download. Whoever can write to the answers folder can
   write in your paper.
+- **By email, the paper leaves through your mail provider.** With `MAIL_TO`
+  and `SMTP_HOST` set, each paper is sent as an attachment through that
+  provider, and for a Kindle address through Amazon. The connection is
+  encrypted with STARTTLS or TLS unless you set `SMTP_SECURITY=none`, which
+  is only for a relay on your own network. The SMTP password is in `.env`
+  and in the environment of the server and the fetcher. Status and health
+  say whether a paper was sent and to how many addresses, never to whom.
 - **Staging, when used, is the only part that faces the internet,** and every
   request to it needs the token. Run it over HTTPS; the token is a password.
 - **The Press and the Kindle stay on the LAN.** Reading from the server,
