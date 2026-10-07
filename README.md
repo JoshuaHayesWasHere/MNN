@@ -12,13 +12,17 @@ already downloaded and waiting in KOReader.
 </p>
 <p align="center"><sub>The front page, as the Kindle draws it on wake. Built from the sample edition with an optional portrait.</sub></p>
 
-Your agent is the newsroom. It writes the paper from whatever it knows about
-your day and your interests: a whole edition, a single section, or the answer
-to a question the Press puts to it at print time. MNN is the press. It lays
-the paper out for e-ink, prints it, and gets it onto the Kindle.
+An AI editor is built in. Give the Press a Claude API key and a sentence
+about what you care about, and each morning it reads your feeds, chooses the
+few stories that matter to you, and writes them up with a line on why. Or
+bring your own agent: it can write a whole edition, a single section, or the
+answer to a question the Press puts to it at print time. MNN is the press. It
+lays the paper out for e-ink, prints it, and gets it onto the Kindle.
 
-- **Written by your agent.** Anything that can write a JSON file or make an
-  HTTP request can write for the paper.
+- **An editor built in.** One API key, and Claude chooses and writes your
+  front page from your feeds, to a brief in your own words.
+- **Or written by your own agent.** Anything that can write a JSON file or
+  make an HTTP request can write for the paper.
 - **Laid out for e-ink.** A front page the Kindle draws on wake, and an EPUB
   with a contents page and a way back from every story.
 - **One line to install** on a Raspberry Pi or any Debian or Ubuntu machine,
@@ -99,9 +103,36 @@ A source that fails loses only its own section; the rest of the paper prints.
 If nothing can be printed, yesterday's paper stays where it was and the Press
 tries again.
 
-## Let your agent write it
+## Turn on the editor
 
-There are three ways in, from least to most set-up:
+The default paper's front page is written by the built-in editor as soon as
+the Press has a key. In `~/mnn/.env` (or `.env` in your clone):
+
+```sh
+ANTHROPIC_API_KEY=sk-ant-...
+```
+
+then run the installer again, or `make restart`. To tell it what you care
+about, copy `sources.toml` into `config/` and edit the `brief`:
+
+```toml
+[[section]]
+title = "Front Page"
+source = "editor"
+feeds = ["https://feeds.bbci.co.uk/news/rss.xml", "https://www.theguardian.com/world/rss"]
+stories = 4
+brief = "I follow AI research and local transport. Skip sport and celebrity."
+timeout = 180
+```
+
+The editor only chooses among stories your feeds carried and writes from
+their summaries; the links and bylines printed are always the feed's.
+[The editor](docs/sources.md#the-editor) has the settings, the cost and what
+leaves your network.
+
+## Let your own agent write it
+
+An agent of your own has three ways in, from least to most set-up:
 
 | Way | The agent | Works with |
 | --- | --- | --- |
@@ -140,9 +171,9 @@ repository.
 
 ## Add news feeds
 
-A section can also come from RSS and Atom feeds, alongside what your agent
-writes. A fresh install starts with a few, so there is a paper to read while
-you set your agent up. To choose them, copy the default into `config/` and
+A section can also come straight from RSS and Atom feeds, unedited. A fresh
+install starts with a few, and until the Press has a key its front page is
+printed that way too. To choose them, copy the default into `config/` and
 edit the copy:
 
 ```sh
@@ -174,7 +205,7 @@ Other settings (time zone, edition time, port) live in `.env`; see
 
 | Page | What it covers |
 | --- | --- |
-| [Sources](docs/sources.md) | The inbox your agent writes to, choosing feeds, the front page portrait, writing a source of your own, what happens when a source fails |
+| [Sources](docs/sources.md) | The built-in editor, the inbox your agent writes to, choosing feeds, the front page portrait, writing a source of your own, what happens when a source fails |
 | [Editions](docs/editions.md) | The edition file format, and the EPUB and front page the build produces |
 | [The Press](docs/press.md) | Running it by hand, what each run does, its HTTP addresses, the `mnn` command, running without Docker |
 | [Staging](docs/staging.md) | Printing a whole edition your agent wrote on another machine |
@@ -226,8 +257,11 @@ a Press on 127.0.0.1 with stand-ins for the screen and the power service.
 - **Two feeds can cover one event.** A story is printed once per paper when
   its headline or link matches; differently worded reports of the same news
   are not recognised as duplicates.
-- **Feeds, the inbox and a question to an agent are the only built-in
-  sources.** Anything else (a calendar, a digest) is a source module you
+- **The editor has not been run against the live API here.** It is tested
+  with a stand-in for Claude. It edits from each feed's summary, not the
+  article, so follow the link when a story matters.
+- **The editor, feeds, the inbox and a question to an agent are the only
+  built-in sources.** Anything else (a calendar, a digest) is a source module you
   write, a file something leaves in the inbox, or an edition you stage.
 - **Your agent has to be told to write.** The Press prints what is left in
   the inbox or staged; having an agent do that every morning is set up on the

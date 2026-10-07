@@ -41,6 +41,8 @@ services:
       <<: *press-env
       # Unset, POST /api/rebuild is off. Set, it needs this token.
       PRESS_TOKEN: ${PRESS_TOKEN:-}
+      # For a reprint: the server runs the fetcher, and with it the editor.
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
     ports:
       - "${PRESS_PORT:-8484}:8484"
     volumes:
@@ -75,6 +77,10 @@ services:
     hostname: press
     command: ["python", "-m", "mnn", "fetch", "--loop", "--fetch-weather",
               "--at", "${EDITION_TIME:-06:40}"]
+    environment:
+      <<: *press-env
+      # For sections with source = "editor". Unset, they print unedited.
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
     volumes:
       - press-data:/data
       - ${PRESS_CONFIG:-./config}:/config:ro

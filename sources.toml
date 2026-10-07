@@ -15,10 +15,12 @@
 # Optional, per section: timeout (seconds the whole section may take, default
 # 60), feed_timeout (seconds each feed may take, default 20), max_age_days
 # (skip older items, default 3), and source (what writes the section instead
-# of the feed reader: "inbox", "ask" (a question put to a Muse at print time),
-# or a module of your own; see docs/sources.md).
+# of the feed reader: "editor" (Claude chooses and rewrites the stories),
+# "inbox", "ask" (a question put to a Muse at print time), or a module of your
+# own; see docs/sources.md).
 #
-# Only each feed's own headline and summary are printed, with a link back.
+# The front page below is written by the editor once ANTHROPIC_API_KEY is set
+# in .env. Until then it is printed straight from its feeds, like the rest.
 
 # title = "The Morning Paper"
 # note = "A line printed at the foot of the front page"
@@ -31,8 +33,16 @@
 
 [[section]]
 title = "Front Page"
-feeds = ["https://feeds.bbci.co.uk/news/rss.xml"]
-stories = 3
+source = "editor"
+feeds = [
+    "https://feeds.bbci.co.uk/news/rss.xml",
+    "https://www.theguardian.com/world/rss",
+    "https://feeds.arstechnica.com/arstechnica/index",
+]
+stories = 4
+# What you care about, in your own words. The editor chooses and writes for it.
+brief = "A general reader who wants the few stories that matter most today."
+timeout = 180
 
 [[section]]
 title = "World"

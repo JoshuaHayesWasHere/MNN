@@ -63,7 +63,7 @@ repository. In short:
 - **It keeps the docs true.** If a command, a setting or a file moves, the
   page that mentions it moves with it.
 - **It adds no dependency lightly.** The image carries the standard library,
-  Pillow and ebooklib. `bin/mnn` and the staging tools use the standard
+  Pillow, ebooklib and, for the editor, the Anthropic SDK. `bin/mnn` and the staging tools use the standard
   library only, on purpose.
 
 ## Pull requests

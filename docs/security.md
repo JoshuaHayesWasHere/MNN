@@ -17,6 +17,14 @@
   Files there are read as data, never run: at most 256 KiB each, plain text
   only, and symbolic links not followed. A file carrying a link that is not
   http(s) is skipped. Whoever can write to the folder can write in your paper.
+- **The editor sends your feeds' headlines to Anthropic.** A section with
+  `source = "editor"` sends your brief and the headline, summary and feed
+  name of each candidate story to Anthropic's API, with your
+  `ANTHROPIC_API_KEY`. Feed text is put in front of a model, so the editor is
+  told to treat it as material and not as instructions, can only choose among
+  the stories it was shown, and has its answer read as plain text with the
+  feed's own links and bylines. The key is in the environment of the server
+  and the fetcher, where a source module of your own can read it.
 - **A source module is code you chose to run.** Anything in `config/` runs
   inside the Press container with its permissions. Only put code there that
   you trust.

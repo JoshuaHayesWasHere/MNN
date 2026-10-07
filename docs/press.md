@@ -88,8 +88,8 @@ curl http://<press-address>:8484/api/health
 
 ## The image
 
-One image (`mnn-press`, about 64 MB) runs every service; only the command
-differs. It is Python slim plus Pillow, ebooklib, and four Noto Serif font
+One image (`mnn-press`) runs every service; only the command differs. It
+is Python slim plus Pillow, ebooklib, the Anthropic SDK, and four Noto Serif font
 files. It runs as a non-root user, contains no compilers, and builds for
 arm64 and amd64 with nothing architecture-specific. The default
 `sources.toml` is baked in; no setting or secret is. Those come from `.env`

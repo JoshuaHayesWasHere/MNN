@@ -50,8 +50,10 @@ def test_the_default_sources_toml_is_a_paper_of_public_feeds():
     paper = press_sources.load_config(None)
     assert paper.path == press_sources.DEFAULT_CONFIG
     assert len(paper.sections) >= 3
+    # The front page is the editor's; with no key it prints from its feeds.
+    assert [spec.source for spec in paper.sections][0] == "editor"
     for spec in paper.sections:
-        assert spec.source == "rss"
+        assert spec.source in ("rss", "editor")
         assert spec.config["stories"] > 0
         assert spec.config["feeds"]
         assert all(feed.startswith("https://") for feed in spec.config["feeds"])
