@@ -7,6 +7,8 @@ Serves the editions in its data directory:
     GET  /paper/latest.txt  file name of the newest EPUB
     GET  /api/display       TRMNL-style JSON pointing at the newest front page
     GET  /frontpage.png     the newest front page PNG
+    GET  /                  a page for a browser: today's front page, the paper to
+                            download, and how to get it onto a reader
     GET  /api/status        how the last print went, section by section
     GET  /card.jpg          that status as a small card for a Muse display board
     GET  /card.rgb565       the same card as raw pixels
@@ -42,6 +44,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import hmac
+import html
 import io
 import json
 import os
@@ -215,6 +218,82 @@ def editions(data_dir: Path, pattern: re.Pattern[str]) -> list[tuple[str, Path]]
         if match and path.is_file():
             found.append((match.group(1), path))
     return sorted(found, reverse=True)
+
+
+HOME_PAGE = """<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+{refresh}<title>The Press</title>
+<style>
+  body {{ margin: 0; background: #f4f1ea; color: #111; font-family: Georgia, "Noto Serif", serif; }}
+  main {{ max-width: 44rem; margin: 0 auto; padding: 2rem 1.25rem 4rem; }}
+  header {{ border-bottom: 4px double #111; padding-bottom: .5rem; margin-bottom: 1.5rem; }}
+  header small {{ letter-spacing: .2em; font-weight: bold; }}
+  h1 {{ font-size: 2.4rem; margin: .2rem 0 0; }}
+  h2 {{ font-size: 1.1rem; letter-spacing: .12em; text-transform: uppercase;
+       border-top: 1px solid #111; padding-top: 1rem; margin-top: 2.5rem; }}
+  img {{ display: block; width: 100%; height: auto; border: 1px solid #111;
+        box-shadow: 0 .6rem 1.6rem rgba(0, 0, 0, .18); }}
+  .button {{ display: inline-block; margin: 1.2rem .6rem 0 0; padding: .7rem 1.1rem;
+            background: #111; color: #f4f1ea; text-decoration: none; font-weight: bold; }}
+  .button.quiet {{ background: none; color: #111; border: 1px solid #111; }}
+  a {{ color: #111; }}
+  code {{ font-family: ui-monospace, Menlo, Consolas, monospace; font-size: .92em;
+         background: rgba(0, 0, 0, .07); padding: .1em .3em; overflow-wrap: anywhere; }}
+  li {{ margin: .35rem 0; }}
+  p {{ line-height: 1.5; }}
+</style>
+</head>
+<body>
+<main>
+<header><small>THE PRESS</small><h1>{heading}</h1></header>
+{paper}
+<h2>Put it on an e-reader</h2>
+<ol>
+  <li><strong>Kindle with KOReader, nothing to type:</strong>
+      <a href="/kindle/install.sh?download">save Install MNN.sh</a>, copy it into the
+      Kindle's <code>documents</code> folder over USB, then long-press it in KOReader's
+      file browser and choose Execute. Open this page by the Press's address on your
+      network first, not <code>localhost</code>.</li>
+  <li><strong>Any reader with KOReader:</strong> add the OPDS catalog
+      <code>{base}/opds</code>.</li>
+  <li><strong>Anything else:</strong> download the EPUB above and send it over.</li>
+</ol>
+{earlier}
+</main>
+</body>
+</html>
+"""
+
+
+def home_page(data_dir: Path, base: str) -> str:
+    """What a browser sees at the Press's address: today's front page, the
+    paper to download, and how to get it onto a reader."""
+    papers = editions(data_dir, EPUB_RE)
+    pages = dict(editions(data_dir, PNG_RE))
+    if not papers:
+        return HOME_PAGE.format(
+            refresh='<meta http-equiv="refresh" content="10">\n',
+            heading="The first paper is on the press",
+            paper="<p>Nothing has been printed yet. A new Press prints its first paper "
+                  "within a minute or two of starting; this page reloads by itself.</p>",
+            base=html.escape(base), earlier="")
+    date, paper = papers[0]
+    link = f"/paper/{html.escape(paper.name)}"
+    picture = (f'<a href="{link}"><img src="/frontpage.png" '
+               f'alt="The front page of the paper for {html.escape(long_date(date))}"></a>\n'
+               if date in pages else "")
+    earlier = "".join(f'  <li><a href="/paper/{html.escape(old.name)}">'
+                      f"{html.escape(long_date(old_date))}</a></li>\n"
+                      for old_date, old in papers[1:8])
+    return HOME_PAGE.format(
+        refresh="", heading=html.escape(long_date(date)),
+        paper=f'{picture}<a class="button" href="{link}">Download the paper (EPUB)</a>'
+              '<a class="button quiet" href="/api/status">How the print went</a>',
+        base=html.escape(base),
+        earlier=f"<h2>Earlier papers</h2>\n<ul>\n{earlier}</ul>" if earlier else "")
 
 
 def long_date(iso: str) -> str:
@@ -508,7 +587,8 @@ class PaperHandler(BaseHTTPRequestHandler):
         data_dir = self.server.data_dir
 
         if path == "/":
-            self.send_text(HTTPStatus.OK, __doc__.split("Usage:")[0].strip() + "\n")
+            self.send_bytes(HTTPStatus.OK, "text/html; charset=utf-8",
+                            home_page(data_dir, self.base_url()).encode("utf-8"))
         elif path == "/opds":
             body = opds_feed(editions(data_dir, EPUB_RE), self.base_url())
             self.send_bytes(HTTPStatus.OK, OPDS_TYPE, body)

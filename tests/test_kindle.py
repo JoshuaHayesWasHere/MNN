@@ -84,6 +84,29 @@ def post_log(press, text: str) -> None:
 # --- The Press endpoints -----------------------------------------------------
 
 
+def test_the_home_page_waits_for_the_first_paper(press):
+    status, body = get(f"{press.url}/")
+    page = body.decode()
+    assert status == 200 and "Nothing has been printed yet" in page
+    assert 'http-equiv="refresh"' in page and "<img" not in page
+
+
+def test_the_home_page_shows_the_newest_paper_and_the_ways_onto_a_reader(press):
+    print_edition(press.data_dir, "2026-10-03")
+    print_edition(press.data_dir, TODAY)
+    page = get(f"{press.url}/")[1].decode()
+    assert f'href="/paper/morning-paper-{TODAY}.epub"' in page
+    assert '<img src="/frontpage.png"' in page and 'http-equiv="refresh"' not in page
+    assert "/kindle/install.sh?download" in page and f"{press.url}/opds" in page
+    assert "Earlier papers" in page and "morning-paper-2026-10-03.epub" in page
+
+
+def test_the_home_page_never_carries_a_hostile_host_header(press):
+    print_edition(press.data_dir, TODAY)
+    page = get(f"{press.url}/", Host='x"><script>alert(1)</script>')[1].decode()
+    assert "<script>" not in page
+
+
 def test_install_script_carries_the_address_it_was_fetched_from(press):
     status, body = get(f"{press.url}/kindle/install.sh")
     assert status == 200
