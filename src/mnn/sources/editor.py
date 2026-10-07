@@ -32,14 +32,11 @@ every link and byline printed is the feed's own, not the model's.
 from __future__ import annotations
 
 import datetime as dt
-import json
-import os
 
+from mnn import claude
+from mnn.claude import DEFAULT_MODEL, KEY_ENV
 from mnn.sources import rss
 
-DEFAULT_MODEL = "claude-opus-5-5"
-DEFAULT_EFFORT = "medium"
-EFFORTS = ("low", "medium", "high")
 DEFAULT_CANDIDATES = 24
 MAX_CANDIDATES = 60
 BRIEF_LIMIT = 2000
@@ -47,13 +44,11 @@ DEFAULT_TIMEOUT = 60
 # Left for the feeds to be read in, and for the section to be handed back.
 FEED_SHARE = 0.4
 MARGIN = 5
-MAX_TOKENS = 16000
 # What a printed article may hold, whatever the model returns.
 DECK_LIMIT = 300
 PARAGRAPH_LIMIT = 900
 PARAGRAPHS = 4
 WHY_LIMIT = 400
-KEY_ENV = "ANTHROPIC_API_KEY"
 
 SYSTEM = """\
 You are the editor of a small personal morning newspaper, read on an e-ink \
@@ -110,8 +105,8 @@ SCHEMA = {
 }
 
 
-class EditorError(Exception):
-    """The editor could not be asked, or what it sent back cannot be printed."""
+# The editor could not be asked, or what it sent back cannot be printed.
+EditorError = claude.ClaudeError
 
 
 def _request(candidates: list[dict], brief: str, stories: int, date: dt.date) -> str:
@@ -131,42 +126,11 @@ def _request(candidates: list[dict], brief: str, stories: int, date: dt.date) ->
 def ask(candidates: list[dict], brief: str, stories: int, date: dt.date, *,
         model: str, effort: str, timeout: float) -> list[dict]:
     """One request to Claude. Returns its stories as it sent them, unchecked."""
-    # Imported here so a Press that has no editor section never loads the SDK.
-    import anthropic
-
-    client = anthropic.Anthropic(timeout=timeout, max_retries=1)
-    try:
-        response = client.beta.messages.create(
-            model=model,
-            max_tokens=MAX_TOKENS,
-            system=SYSTEM,
-            messages=[{"role": "user", "content": _request(candidates, brief, stories, date)}],
-            output_config={"effort": effort,
-                           "format": {"type": "json_schema", "schema": SCHEMA}},
-            # If the model's safeguards decline the request, the API reruns
-            # it on a fallback model inside the same call.
-            betas=["server-side-fallback-2026-07-01"],
-            fallbacks="default",
-        )
-    except anthropic.AuthenticationError as exc:
-        raise EditorError(f"the API key was not accepted ({exc.status_code})") from exc
-    except anthropic.RateLimitError as exc:
-        raise EditorError("rate limited") from exc
-    except anthropic.APIStatusError as exc:
-        raise EditorError(f"the API answered {exc.status_code}") from exc
-    except anthropic.APIConnectionError as exc:
-        raise EditorError("the API could not be reached in time") from exc
-    except anthropic.AnthropicError as exc:
-        raise EditorError(f"the request could not be made ({type(exc).__name__})") from exc
-    if response.stop_reason == "refusal":
-        raise EditorError("the request was declined")
-    if response.stop_reason == "max_tokens":
-        raise EditorError("the answer was cut short")
-    text = next((block.text for block in response.content if block.type == "text"), "")
-    try:
-        return json.loads(text)["stories"]
-    except (ValueError, KeyError, TypeError) as exc:
-        raise EditorError("the answer was not the JSON asked for") from exc
+    answer = claude.ask_json(SYSTEM, _request(candidates, brief, stories, date), SCHEMA,
+                             model=model, effort=effort, timeout=timeout)
+    if "stories" not in answer:
+        raise EditorError("the answer was not the JSON asked for")
+    return answer["stories"]
 
 
 def _text(value: object, limit: int) -> str:
@@ -219,12 +183,7 @@ def produce(date: dt.date, config: dict) -> dict:
         raise ValueError("'brief' must be a string")
     if len(brief) > BRIEF_LIMIT:
         raise ValueError(f"'brief' must be {BRIEF_LIMIT} characters at most")
-    model = config.get("model", DEFAULT_MODEL)
-    if not isinstance(model, str) or not model.strip():
-        raise ValueError("'model' must be a model name")
-    effort = config.get("effort", DEFAULT_EFFORT)
-    if effort not in EFFORTS:
-        raise ValueError("'effort' must be one of: " + ", ".join(EFFORTS))
+    model, effort = claude.settings(config)
     timeout = rss._number(config, "timeout", DEFAULT_TIMEOUT)
     # The feeds and the editor share the section's time.
     feed_timeout = min(rss._number(config, "feed_timeout", rss.DEFAULT_FEED_TIMEOUT),
@@ -239,13 +198,13 @@ def produce(date: dt.date, config: dict) -> dict:
 
     if not candidates:
         return dict(section, notes=notes)
-    if not os.environ.get(KEY_ENV):
+    if not claude.has_key():
         return unedited(f"{KEY_ENV} is not set")
     wait = timeout * (1 - FEED_SHARE) - MARGIN
     if wait < 10:
         return unedited("the section's timeout leaves the editor under ten seconds; raise it")
     try:
-        written = ask(candidates, brief.strip(), stories, date, model=model.strip(),
+        written = ask(candidates, brief.strip(), stories, date, model=model,
                       effort=effort, timeout=wait)
         articles = edited(candidates, written, stories)
     except EditorError as exc:

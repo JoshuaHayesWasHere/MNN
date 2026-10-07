@@ -65,6 +65,57 @@ ANTHROPIC_API_KEY=sk-ant-...
 - **Not yet run against the live API here.** The request was written against
   the Anthropic SDK and is tested with a stand-in for Claude.
 
+## Your day
+
+A section with `source = "day"` is about you: what is in your calendar
+today, and, with a key, a short piece by Claude on how the day is shaped.
+
+```toml
+[[section]]
+title = "Your Day"
+source = "day"
+calendars = ["https://calendar.google.com/calendar/ical/.../basic.ics"]
+brief = "I work from home on Tuesdays. The school run is mine."
+timeout = 120
+```
+
+`calendars` are the private iCalendar (`.ics`) addresses a calendar gives you
+for subscribing from elsewhere. In Google Calendar it is "Secret address in
+iCal format" under a calendar's settings; Apple, Outlook and Fastmail have
+the same thing under sharing. Put the section first and your day leads the
+front page.
+
+- **The agenda is the calendar's own.** Every event today is listed in
+  order, with its time and place exactly as the calendar has them, in the
+  Press's time zone (`TZ`).
+- **The piece above it is Claude's.** With `ANTHROPIC_API_KEY` set, the
+  section opens with one to three paragraphs written from the agenda and your
+  `brief`. The agenda is always printed beneath it, untouched, so a time is
+  never the model's word. With no key, or when the request fails, the agenda
+  is printed on its own and the report says why.
+- **A day with nothing on has no section.** The report lists it as `empty`,
+  not as a failure.
+- **Repeating events** are followed when they repeat daily, weekly, monthly
+  or yearly: with an interval, a count or an end date, on chosen weekdays, or
+  on "the second Tuesday". Dates left out of a series and single meetings
+  moved out of one are respected. A rule beyond those is not guessed at: the
+  event is left out and named in the report.
+- **A calendar address is a password to that calendar.** It lives in
+  `config/sources.toml`, which git ignores, and is never logged or reported
+  in full: a calendar that cannot be read is noted by its place in the list
+  and its host.
+- **What leaves your network:** nothing without a key, beyond fetching the
+  calendars. With one, your brief and today's events (title, time, place) go
+  to Anthropic's API.
+- **It is the most personal page of the paper,** and the Press serves its
+  papers to anyone on your network. See [Security](security.md).
+- **Tried on files written to the standard,** not yet against a live Google
+  or Outlook calendar. Outlook names time zones its own way; an event in a
+  zone this machine does not know is read as local time.
+
+Optional keys: `calendar_timeout` (seconds each calendar gets, default 20),
+and the editor's `model` and `effort`.
+
 ## Choosing your feeds
 
 The default paper is [`sources.toml`](../sources.toml), baked into the image: a
@@ -209,7 +260,8 @@ strings recorded with its outcome. A source with nothing to say today returns
 no articles and `empty`, a string saying why: its section is left out without
 counting as a failure.
 `source` defaults to `rss`; a module in `config/` wins over a built-in one of
-the same name (the others are [`editor`](#the-editor), [`inbox`](#the-inbox) and
+the same name (the others are [`editor`](#the-editor), [`day`](#your-day),
+[`inbox`](#the-inbox) and
 [`ask`](muse.md#asking-muse-at-print-time)). The image carries the standard library,
 Pillow, ebooklib and the Anthropic SDK, and a source can import the modules beside it.
 

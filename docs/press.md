@@ -417,7 +417,9 @@ Every script also runs by hand: `uv run mnn-press server`, `uv run mnn-press fet
 | `src/mnn/` | The Python package; `mnn-press <command>` runs any part of it |
 | `src/mnn/press_fetch.py` | `fetch`: get the edition, build, hand to the server, record how it went |
 | `src/mnn/press_sources.py` | Reads `sources.toml`, runs each source on its own, assembles the edition |
-| `src/mnn/sources/` | The built-in sources: `rss`, `inbox` and `ask` |
+| `src/mnn/sources/` | The built-in sources: `editor`, `day`, `rss`, `inbox` and `ask` |
+| `src/mnn/claude.py` | The one request to Claude that the editor and the day share |
+| `src/mnn/ics.py` | Reads a calendar file for what is on a given day |
 | `src/mnn/build_paper.py` | `build`: edition file in, EPUB and front page PNG out |
 | `src/mnn/server.py` | `server`: the LAN server the Kindle talks to |
 | `src/mnn/card.py` | The desk card: the paper's state as a small picture for a display board |
