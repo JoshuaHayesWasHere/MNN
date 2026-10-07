@@ -7,6 +7,7 @@
     mnn-press stage       the staging server
     mnn-press stage-put   upload an edition to staging
     mnn-press muse        send one message to a paired Muse gadget
+    mnn-press mail        send the newest paper by email, if it has not gone
     mnn-press paper_status | paper_rebuild | paper_health
 
 Everything after the command goes to it unchanged, so `mnn-press fetch
@@ -24,6 +25,7 @@ COMMANDS = {
     "stage": "mnn.stage",
     "stage-put": "mnn.stage_put",
     "muse": "mnn.muse",
+    "mail": "mnn.mail",
 }
 # press_commands takes the command's own name as its first argument.
 PAPER_COMMANDS = ("paper_status", "paper_rebuild", "paper_health")

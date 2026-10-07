@@ -42,7 +42,7 @@ import tempfile
 import time
 from pathlib import Path
 
-from mnn import press_sources, server, staging
+from mnn import mail, press_sources, server, staging
 from mnn.staging import Stage, StageError
 
 
@@ -335,14 +335,23 @@ def main(argv: list[str] | None = None) -> int:
                                fetch_weather=args.fetch_weather, force=force,
                                keep_days=args.keep_days)
 
+    def check_and_mail(force: bool = False) -> int:
+        """The paper first; then the newest one is mailed, if mail is on and
+        it has not gone. A send that fails is tried again at the next check."""
+        result = check(force)
+        outcome = mail.deliver_newest(data_dir)
+        if outcome != "mail: off" and "already been sent" not in outcome:
+            print(outcome, file=sys.stderr if "not sent" in outcome else sys.stdout, flush=True)
+        return result
+
     if not args.loop:
         # A forced run is a reprint someone asked for, not the schedule.
         if not args.force:
             staging.save_heartbeat(data_dir, loop=False)
-        return check(args.force)
+        return check_and_mail(args.force)
     signal.signal(signal.SIGTERM, lambda *_: sys.exit(0))
     try:
-        run_forever(check, args.at, args.until, dt.timedelta(minutes=args.retry_minutes),
+        run_forever(check_and_mail, args.at, args.until, dt.timedelta(minutes=args.retry_minutes),
                     beat=lambda: staging.save_heartbeat(data_dir, loop=True))
     except KeyboardInterrupt:
         pass

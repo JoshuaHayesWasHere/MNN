@@ -3,7 +3,7 @@
 # the tools are `uv run`.
 
 .DEFAULT_GOAL := help
-.PHONY: help up down restart logs status health reprint update kindle sample test check
+.PHONY: help up down restart logs status health reprint mail update kindle sample test check
 
 help: ## List these commands
 	@awk 'BEGIN {FS = ":.*## "} /^[a-z-]+:.*## / {printf "  make %-9s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -29,6 +29,9 @@ health: ## Is the Press itself working?
 
 reprint: ## Print today's paper again
 	@docker compose exec press-server python -m mnn paper_rebuild
+
+mail: ## Send the newest paper by email now, if it has not gone (see docs/press.md)
+	@docker compose exec press-fetch python -m mnn mail
 
 update: ## Pull the latest version and restart
 	git pull --ff-only

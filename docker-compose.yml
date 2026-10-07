@@ -33,12 +33,23 @@ x-press: &press
     # Off unless set: the card's address, as a Muse display board reaches it.
     MUSE_CARD_URL: ${MUSE_CARD_URL:-}
 
+# Sending each paper by email (see docs/press.md). Off unless MAIL_TO and
+# SMTP_HOST are set. Given to the fetcher, and to the server for reprints.
+x-mail: &mail-env
+  MAIL_TO: ${MAIL_TO:-}
+  MAIL_FROM: ${MAIL_FROM:-}
+  SMTP_HOST: ${SMTP_HOST:-}
+  SMTP_PORT: ${SMTP_PORT:-}
+  SMTP_USER: ${SMTP_USER:-}
+  SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+  SMTP_SECURITY: ${SMTP_SECURITY:-}
+
 services:
   press-server:
     <<: *press
     command: ["python", "-m", "mnn", "server", "--edition-time", "${EDITION_TIME:-06:40}"]
     environment:
-      <<: *press-env
+      <<: [*press-env, *mail-env]
       # Unset, POST /api/rebuild is off. Set, it needs this token.
       PRESS_TOKEN: ${PRESS_TOKEN:-}
       # For a reprint: the server runs the fetcher, and with it the editor.
@@ -78,7 +89,7 @@ services:
     command: ["python", "-m", "mnn", "fetch", "--loop", "--fetch-weather",
               "--at", "${EDITION_TIME:-06:40}"]
     environment:
-      <<: *press-env
+      <<: [*press-env, *mail-env]
       # For sections with source = "editor". Unset, they print unedited.
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
     volumes:

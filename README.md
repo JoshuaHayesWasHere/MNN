@@ -27,12 +27,16 @@ lays the paper out for e-ink, prints it, and gets it onto the Kindle.
   make an HTTP request can write for the paper.
 - **Laid out for e-ink.** A front page the Kindle draws on wake, and an EPUB
   with a contents page and a way back from every story.
+- **Onto any Kindle.** A jailbroken one wakes itself to the front page each
+  morning; any other gets the paper by email, through Send to Kindle.
 - **One line to install** on a Raspberry Pi or any Debian or Ubuntu machine,
   and one file to copy onto the Kindle.
 - **Self-hosted.** The Press runs on your network, with no account and no
   settings needed.
 
-It targets a Kindle Paperwhite 11 (1236x1648, 300 ppi) with KOReader.
+The wake-to-a-front-page route targets a Kindle Paperwhite 11 (1236x1648,
+300 ppi) with KOReader. By email, the paper goes to any Kindle, and by OPDS
+to any reader running KOReader.
 
 ## Try it in two minutes
 
@@ -68,6 +72,10 @@ Then point a Kindle at it, with nothing to type on the Kindle:
    and save the file into the Kindle's `documents` folder over USB.
 2. In KOReader's file browser, long-press `Install MNN.sh` and choose
    **Execute**.
+
+No jailbreak? The Press can also email each paper to any Kindle's Send to
+Kindle address: see
+[Sending the paper by email](docs/press.md#sending-the-paper-by-email).
 
 Or type one line in KOReader's terminal:
 
@@ -239,7 +247,7 @@ Other settings (time zone, edition time, port) live in `.env`; see
 | --- | --- |
 | [Sources](docs/sources.md) | The built-in editor, your day from your calendar, the inbox your agent writes to, choosing feeds, the front page portrait, writing a source of your own, what happens when a source fails |
 | [Editions](docs/editions.md) | The edition file format, and the EPUB and front page the build produces |
-| [The Press](docs/press.md) | Running it by hand, what each run does, its HTTP addresses, the `mnn` command, running without Docker |
+| [The Press](docs/press.md) | Running it by hand, what each run does, sending the paper by email, its HTTP addresses, the `mnn` command, running without Docker |
 | [Staging](docs/staging.md) | Printing a whole edition your agent wrote on another machine |
 | [Muse](docs/muse.md) | Experimental: a question at print time, status messages and a desk display through Meta's Muse |
 | [Security](docs/security.md) | What the Press trusts, what leaves the house, and what anyone on your LAN can reach |
@@ -276,6 +284,8 @@ a Press on 127.0.0.1 with stand-ins for the screen and the power service.
 
 ## Limitations
 
+- **Email delivery has not been run against a real provider.** It is tested
+  against a mail server inside the tests, not Gmail or a real Kindle address.
 - **One Kindle model, tried on one Kindle.** The Kindle scripts have run on
   a single Paperwhite 11 on firmware 5.18.1. They rely on the Kindle's power
   service accepting a clock wake as it suspends, which other models and

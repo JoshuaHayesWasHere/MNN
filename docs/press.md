@@ -212,8 +212,8 @@ paper is not arriving, or soon will not:
 | `disk_low` | Less than 200 MB free where papers are kept |
 
 A warning is worth a look, but the paper printed: `section_left_out` (a
-source failed, with the reason) and `receipt_unsent` (staging could not be
-told).
+source failed, with the reason), `receipt_unsent` (staging could not be
+told) and `mail_unsent` (the paper was not sent by email, with the reason).
 
 **Rebuild** reprints today's edition: it runs the fetcher with `--force` and
 answers when it is done, which can take a few minutes. A reprint runs the
@@ -306,6 +306,59 @@ it or to run `mnn`.
 
 So a cron line that speaks up only when something is wrong is
 `mnn health >/dev/null || mnn health`.
+
+## Sending the paper by email
+
+The Press can send each new paper by email, as an EPUB attachment. That is
+how it reaches a reader that cannot fetch it from the Press: above all a
+Kindle that is not jailbroken, through Amazon's Send to Kindle.
+
+In `.env`:
+
+```sh
+MAIL_TO=your-name_abc123@kindle.com
+SMTP_HOST=smtp.gmail.com
+SMTP_USER=you@gmail.com
+SMTP_PASSWORD=an-app-password
+```
+
+then `make restart`. It is off unless both `MAIL_TO` and `SMTP_HOST` are set.
+
+| Setting | Default | Meaning |
+| --- | --- | --- |
+| `MAIL_TO` | unset | Where to send the paper; several addresses separated by commas |
+| `SMTP_HOST` | unset | Your mail provider's SMTP server |
+| `SMTP_PORT` | `587`, or `465` with `ssl` | Its port |
+| `SMTP_USER`, `SMTP_PASSWORD` | unset | The account to sign in as. Most providers want an app password here, not your own |
+| `MAIL_FROM` | `SMTP_USER` | The sender |
+| `SMTP_SECURITY` | `starttls` | `starttls`, `ssl`, or `none` for a relay on your own network |
+
+**For a Kindle**, two things in your Amazon account, under Manage Your
+Content and Devices, Preferences, Personal Document Settings:
+
+1. The Kindle's own address, which ends `@kindle.com`, is `MAIL_TO`.
+2. Add the `MAIL_FROM` address to the Approved Personal Document E-mail
+   List. Amazon drops mail from anyone else without a word.
+
+The paper then appears in the Kindle's library like any book sent to it. The
+front page on wake and the Kindle's own morning fetch are the jailbroken
+route's; by email, the paper is simply there when you open the Kindle.
+
+- **Each edition is sent once.** A reprint with different contents is sent
+  again; one that comes out the same is not.
+- **A failed send never holds up the paper.** It is printed and served
+  either way. The send is tried again at the fetcher's next check (every ten
+  minutes until 09:00), five times at most, and [health](#asking-the-press)
+  carries a `mail_unsent` warning with the reason until one goes through.
+- **By hand:** `make mail` sends the
+  newest paper if it has not gone; `docker compose exec press-fetch python -m
+  mnn mail --again` sends it regardless.
+- **`/api/status` says whether it went, never where:** `mail` holds the
+  edition, `sent` or `failed`, the reason, and how many addresses.
+- **The password is in `.env`,** which git ignores. The paper leaves your
+  network through your mail provider, and, for a Kindle, through Amazon.
+- **Tested against a mail server inside the tests,** not yet against a real
+  provider or a real Kindle address.
 
 ## The server
 
@@ -418,6 +471,7 @@ Every script also runs by hand: `uv run mnn-press server`, `uv run mnn-press fet
 | `src/mnn/press_fetch.py` | `fetch`: get the edition, build, hand to the server, record how it went |
 | `src/mnn/press_sources.py` | Reads `sources.toml`, runs each source on its own, assembles the edition |
 | `src/mnn/sources/` | The built-in sources: `editor`, `day`, `rss`, `inbox` and `ask` |
+| `src/mnn/mail.py` | `mail`: sends each new paper by email, as an EPUB |
 | `src/mnn/claude.py` | The one request to Claude that the editor and the day share |
 | `src/mnn/ics.py` | Reads a calendar file for what is on a given day |
 | `src/mnn/build_paper.py` | `build`: edition file in, EPUB and front page PNG out |

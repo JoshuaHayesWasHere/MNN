@@ -344,6 +344,11 @@ def press_status(data_dir: Path, now: dt.datetime | None = None, *,
         "kindle": {key: kindle.get(key) for key in
                    ("edition_date", "downloaded_at", "last_seen_at", "last_warning")},
     }
+    mailed = staging.load_json(staging.press_dir(data_dir) / "mail.json")
+    if mailed:
+        # Whether the paper went out by email. Never the addresses.
+        status["mail"] = {key: mailed.get(key) for key in
+                          ("edition_date", "status", "error", "at", "recipients")}
     if status["mode"] == "sources":
         report = staging.load_report(data_dir)
         keys = SECTION_KEYS + ("headlines",) if headlines else SECTION_KEYS
@@ -484,6 +489,9 @@ def press_health(data_dir: Path, edition_time: dt.time | None = None, *,
              f"section {section['title']!r} was left out of the last paper: {section['error']}")
     if receipt.get("unsent"):
         note(warnings, "receipt_unsent", "a receipt is waiting to be sent to staging")
+    mailed = staging.load_json(staging.press_dir(data_dir) / "mail.json")
+    if mailed.get("status") == "failed":
+        note(warnings, "mail_unsent", f"the paper was not sent by email: {mailed.get('error')}")
 
     return {
         "ok": not problems,
