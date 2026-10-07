@@ -3,6 +3,68 @@
 A source writes one section of the paper. The Press runs them all at edition
 time and prints whatever came back.
 
+## The editor
+
+A section with `source = "editor"` is chosen and written by Claude. The feed
+reader collects more stories than the section needs; the editor picks the
+ones that matter to you, puts the most important first, and rewrites each as
+a short article with a headline, a standfirst and a line on why it matters.
+
+```toml
+[[section]]
+title = "Front Page"
+source = "editor"
+feeds = [
+    "https://feeds.bbci.co.uk/news/rss.xml",
+    "https://www.theguardian.com/world/rss",
+]
+stories = 4
+brief = "I follow AI research and local transport. Skip sport and celebrity."
+timeout = 180
+```
+
+The default paper's front page is already one. To turn it on, put a key in
+`.env` and restart (`make restart`):
+
+```sh
+ANTHROPIC_API_KEY=sk-ant-...
+```
+
+| Key | Default | Meaning |
+| --- | --- | --- |
+| `feeds` | none | Where the stories come from, as for any feed section |
+| `stories` | `5` | The most stories printed |
+| `brief` | none | What you care about, in your own words, 2000 characters at most |
+| `candidates` | `24` | How many stories the editor chooses from, 60 at most |
+| `model` | `claude-opus-5-5` | The Claude model that edits |
+| `effort` | `medium` | `low`, `medium` or `high`: how much thought goes into the edit |
+| `timeout` | `60` | Seconds for the whole section. The feeds get two fifths and the editor the rest, so give an editor section `180` |
+
+`feed_timeout` and `max_age_days` work as they do for a feed section.
+
+- **The brief is the whole setting.** Write it the way you would tell a
+  person: what you follow, what you are tired of, what you want more of.
+  Change it and tomorrow's paper changes.
+- **It never costs you the section.** With no key, or when the request
+  fails, is declined, or comes back unusable, the section is printed straight
+  from its feeds, as a feed section would be, and the report says why
+  (`printed from the feeds, unedited: ...`).
+- **It only edits what the feeds said.** The editor sees each story's
+  headline and summary, not the article, and is told to add nothing that is
+  not there. It is still a model summarising a summary: treat it as an edit,
+  not a source, and follow the link when a story matters.
+- **Links and bylines are always the feed's.** The editor refers to a story
+  by number and cannot supply an address or a publication of its own. Text it
+  writes about a story it was not shown is dropped.
+- **What leaves your network** is your brief and the headline, summary and
+  feed name of each candidate story, sent to Anthropic's API. See
+  [Security](security.md).
+- **What it costs** is one request a day per editor section, of a few
+  thousand tokens. `effort = "low"` and fewer `candidates` make it cheaper;
+  a different `model` changes the price.
+- **Not yet run against the live API here.** The request was written against
+  the Anthropic SDK and is tested with a stand-in for Claude.
+
 ## Choosing your feeds
 
 The default paper is [`sources.toml`](../sources.toml), baked into the image: a
@@ -147,9 +209,9 @@ strings recorded with its outcome. A source with nothing to say today returns
 no articles and `empty`, a string saying why: its section is left out without
 counting as a failure.
 `source` defaults to `rss`; a module in `config/` wins over a built-in one of
-the same name (the others are [`inbox`](#the-inbox) and
+the same name (the others are [`editor`](#the-editor), [`inbox`](#the-inbox) and
 [`ask`](muse.md#asking-muse-at-print-time)). The image carries the standard library,
-Pillow and ebooklib, and a source can import the modules beside it.
+Pillow, ebooklib and the Anthropic SDK, and a source can import the modules beside it.
 
 ## The inbox
 

@@ -6,7 +6,7 @@
 FROM python:3.13-slim AS build
 COPY --from=ghcr.io/astral-sh/uv:0.9 /uv /usr/local/bin/uv
 WORKDIR /app
-# Dependencies only (Pillow and ebooklib). Both ship binary wheels for amd64
+# Dependencies only (Pillow, ebooklib and the Anthropic SDK). All ship binary wheels for amd64
 # and arm64, so nothing is compiled and no build tools are needed.
 COPY pyproject.toml uv.lock ./
 RUN UV_PROJECT_ENVIRONMENT=/venv UV_LINK_MODE=copy UV_COMPILE_BYTECODE=1 \
