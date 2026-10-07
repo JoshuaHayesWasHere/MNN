@@ -21,6 +21,8 @@ lays the paper out for e-ink, prints it, and gets it onto the Kindle.
 
 - **An editor built in.** One API key, and Claude chooses and writes your
   front page from your feeds, to a brief in your own words.
+- **Your day on the front page.** Point it at your calendar and the paper
+  opens with today's agenda and a few sentences on how the day is shaped.
 - **Or written by your own agent.** Anything that can write a JSON file or
   make an HTTP request can write for the paper.
 - **Laid out for e-ink.** A front page the Kindle draws on wake, and an EPUB
@@ -142,6 +144,24 @@ their summaries; the links and bylines printed are always the feed's.
 [The editor](docs/sources.md#the-editor) has the settings, the cost and what
 leaves your network.
 
+## Put your day in it
+
+Give the paper your calendar's private `.ics` address and it opens with you:
+
+```toml
+[[section]]
+title = "Your Day"
+source = "day"
+calendars = ["https://calendar.google.com/calendar/ical/.../basic.ics"]
+brief = "I work from home on Tuesdays. The school run is mine."
+timeout = 120
+```
+
+The agenda is printed exactly as the calendar has it. With a key, Claude
+writes a short piece above it on where the day's weight falls. A day with
+nothing on has no such section. [Your day](docs/sources.md#your-day) has the
+details, and what it means for privacy.
+
 ## Let your own agent write it
 
 An agent of your own has three ways in, from least to most set-up:
@@ -217,7 +237,7 @@ Other settings (time zone, edition time, port) live in `.env`; see
 
 | Page | What it covers |
 | --- | --- |
-| [Sources](docs/sources.md) | The built-in editor, the inbox your agent writes to, choosing feeds, the front page portrait, writing a source of your own, what happens when a source fails |
+| [Sources](docs/sources.md) | The built-in editor, your day from your calendar, the inbox your agent writes to, choosing feeds, the front page portrait, writing a source of your own, what happens when a source fails |
 | [Editions](docs/editions.md) | The edition file format, and the EPUB and front page the build produces |
 | [The Press](docs/press.md) | Running it by hand, what each run does, its HTTP addresses, the `mnn` command, running without Docker |
 | [Staging](docs/staging.md) | Printing a whole edition your agent wrote on another machine |
@@ -269,11 +289,12 @@ a Press on 127.0.0.1 with stand-ins for the screen and the power service.
 - **Two feeds can cover one event.** A story is printed once per paper when
   its headline or link matches; differently worded reports of the same news
   are not recognised as duplicates.
-- **The editor has not been run against the live API here.** It is tested
-  with a stand-in for Claude. It edits from each feed's summary, not the
+- **The editor and the day's piece have not been run against the live API
+  here.** They are tested with a stand-in for Claude, and the calendar reader
+  with files written to the standard, not a live Google or Outlook calendar. It edits from each feed's summary, not the
   article, so follow the link when a story matters.
-- **The editor, feeds, the inbox and a question to an agent are the only
-  built-in sources.** Anything else (a calendar, a digest) is a source module you
+- **The editor, your day, feeds, the inbox and a question to an
+  agent are the built-in sources.** Anything else (a digest, your tasks) is a source module you
   write, a file something leaves in the inbox, or an edition you stage.
 - **Your agent has to be told to write.** The Press prints what is left in
   the inbox or staged; having an agent do that every morning is set up on the

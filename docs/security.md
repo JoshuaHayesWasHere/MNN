@@ -25,6 +25,14 @@
   the stories it was shown, and has its answer read as plain text with the
   feed's own links and bylines. The key is in the environment of the server
   and the fetcher, where a source module of your own can read it.
+- **Your calendar is in the paper, and with a key it goes to Anthropic.** A
+  section with `source = "day"` prints today's events into a paper anyone on
+  the LAN can download, and its first headline can appear on the front page
+  the Kindle shows on wake. With `ANTHROPIC_API_KEY` set, your brief and the
+  day's events (title, time, place) are sent to Anthropic's API; event text
+  is treated there as material, not instructions, and the agenda that is
+  printed comes from the calendar, not from the model. A calendar's address
+  is a password to it: keep it in `config/sources.toml` and nowhere else.
 - **A source module is code you chose to run.** Anything in `config/` runs
   inside the Press container with its permissions. Only put code there that
   you trust.

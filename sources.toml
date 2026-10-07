@@ -15,12 +15,21 @@
 # Optional, per section: timeout (seconds the whole section may take, default
 # 60), feed_timeout (seconds each feed may take, default 20), max_age_days
 # (skip older items, default 3), and source (what writes the section instead
-# of the feed reader: "editor" (Claude chooses and rewrites the stories),
-# "inbox", "ask" (a question put to a Muse at print time), or a module of your
-# own; see docs/sources.md).
+# of the feed reader: "editor" (Claude chooses and rewrites the stories), "day"
+# (your calendar, and a piece on the day), "inbox", "ask" (a question put to
+# a Muse at print time), or a module of your own; see docs/sources.md).
 #
 # The front page below is written by the editor once ANTHROPIC_API_KEY is set
 # in .env. Until then it is printed straight from its feeds, like the rest.
+
+# Your own day, from your calendar, leading the paper. Uncomment it in your
+# copy and give it your calendar's private .ics address.
+# [[section]]
+# title = "Your Day"
+# source = "day"
+# calendars = ["https://calendar.google.com/calendar/ical/.../basic.ics"]
+# brief = "A line or two about your week, for the piece that opens the section."
+# timeout = 120
 
 # title = "The Morning Paper"
 # note = "A line printed at the foot of the front page"
