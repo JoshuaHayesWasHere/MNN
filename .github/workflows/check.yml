@@ -18,7 +18,7 @@ permissions:
 
 jobs:
   check:
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNS_ON || 'MNN-ephemeral' }}
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v7
@@ -33,9 +33,13 @@ jobs:
           curl -fsSL -o shellcheck.tar.xz "https://github.com/koalaman/shellcheck/releases/download/v${SHELLCHECK_VERSION}/shellcheck-v${SHELLCHECK_VERSION}.linux.x86_64.tar.xz"
           echo "${SHELLCHECK_SHA256}  shellcheck.tar.xz" | sha256sum -c -
           tar -xJf shellcheck.tar.xz
-          sudo install "shellcheck-v${SHELLCHECK_VERSION}/shellcheck" /usr/local/bin/shellcheck
+          # Into the job's own bin, not /usr/local/bin: the local runners run
+          # with no-new-privileges, so sudo does not work there.
+          mkdir -p "$RUNNER_TEMP/bin"
+          install -m 755 "shellcheck-v${SHELLCHECK_VERSION}/shellcheck" "$RUNNER_TEMP/bin/shellcheck"
+          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
           rm -rf shellcheck.tar.xz "shellcheck-v${SHELLCHECK_VERSION}"
-          shellcheck --version
+          "$RUNNER_TEMP/bin/shellcheck" --version
 
       - name: Shellcheck
         run: |
