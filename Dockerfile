@@ -3,7 +3,7 @@
 # The same image also runs the optional staging server and the gadget scaffold;
 # only the command differs.
 
-FROM python:3.13-slim AS build
+FROM python:3.15-slim AS build
 COPY --from=ghcr.io/astral-sh/uv:0.9 /uv /usr/local/bin/uv
 WORKDIR /app
 # Dependencies only (Pillow, ebooklib and the Anthropic SDK). All ship binary wheels for amd64
@@ -21,7 +21,7 @@ RUN apt-get update \
           /usr/share/fonts/truetype/noto/NotoSerif-Italic.ttf \
           /usr/share/fonts/truetype/noto/NotoSerif-BoldItalic.ttf /fonts/
 
-FROM python:3.13-slim
+FROM python:3.15-slim
 # fontconfig lets the builder find the serif face; tzdata makes TZ work, so
 # "06:40" means 06:40 where you live.
 RUN apt-get update \
