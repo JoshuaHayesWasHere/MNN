@@ -44,7 +44,7 @@ jobs:
           git ls-files -z 'kindle/*.sh' | xargs -0 -r shellcheck --shell=sh
           git ls-files -z '*.sh' ':!kindle/*.sh' | xargs -0 -r shellcheck
 
-      - uses: astral-sh/setup-uv@v10.2.0
+      - uses: astral-sh/setup-uv@v10.3.3
         with:
           enable-cache: true
 
